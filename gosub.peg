@@ -19,19 +19,42 @@
     this.args = args;
     this.call = function(scope) { resolve(scope, fn)(resolve(scope, args)) }
     this.toString = function() { return fn+"("+args+")"; }
-    this.dumpable = true;
   }
   
-  identifier = function(a, sigil) {
+  identifier = function(name, sigil) {
     this.sigil = sigil;
-    this.name = a.join('');
+    this.name = name;
     this.toString = function() { return "«"+this.name+(this.sigil ? this.sigil : '')+"»" }
-    this.dumpable = true;
   }
 
-  ifInvocation = function(cond, thenExpr, elseExpr) {
-    this.toString = function() { return cond+" ? "+thenExpr+" : "+elseExpr }
-    this.dumpable = true;
+  F = {
+    if: function(cond, thenExpr, elseExpr) {
+      this.toString = function() { return cond+" ? "+thenExpr+" : "+elseExpr }
+    },
+    '<': function(l, r) {
+      this.toString = function() { return l+"<"+r }
+    },
+    '>': function(l, r) {
+      this.toString = function() { return l+">"+r }
+    },
+    '+': function(l, r) {
+      this.toString = function() { return l+"+"+r }
+    },
+    '-': function(l, r) {
+      this.toString = function() { return l+"-"+r }
+    },
+    '\\': function(l, r) {
+      this.toString = function() { return l+"\\"+r }
+    },
+    'mod': function(l, r) {
+      this.toString = function() { return l+" mod "+r }
+    },
+    '*': function(l, r) {
+      this.toString = function() { return l+"*"+r }
+    },
+    '/': function(l, r) {
+      this.toString = function() { return l+"/"+r }
+    },
   }
 }
 
@@ -49,39 +72,48 @@ SourceElements
     }
 
 SourceElement
-  = Expression
+  = Invocation
+  
+Invocation
+  = left:Identifier _ right:Expression { return new invocation(left, right) }
+  / Expression
 
 Expression
   = Additive
   / Conditional
+  / Identifier
 
 Conditional
-  = IfToken _ cond:Expression _
-    ThenToken _ thenExpr:Expression _
-    elseExpr:(ElseToken _ Expression _)?
-    EndIfToken?
-    { return new ifInvocation(cond, thenExpr, elseExpr !== null ? elseExpr[2] : null) }
-  / IfToken __ cond:Expression __
-    ThenToken __ thenExpr:Expression __
-    elseExpr:(ElseToken __ Expression __)?
-    EndIfToken
-    { return new ifInvocation(cond, thenExpr, elseExpr !== null ? elseExpr[2] : null) }
+  = 'if' _ cond:Expression _
+    'then' _ thenExpr:Expression _
+    elseExpr:('else' _ Expression _)?
+    'end if'?
+    { return new F.if(cond, thenExpr, elseExpr !== null ? elseExpr[2] : null) }
+  / 'if' __ cond:Expression __
+    'then' __ thenExpr:Expression __
+    elseExpr:('else' __ Expression __)?
+    'end if'
+    { return new F.if(cond, thenExpr, elseExpr !== null ? elseExpr[2] : null) }
 
 Additive
-  = left:Multiplicative "+" right:Additive { return left + right; }
+  = l:Modulative "+" r:Additive { return new F['+'](l, r); }
+  / l:Modulative "-" r:Additive { return new F['-'](l, r); }
+  / Modulative
+  
+Modulative
+  = l:Multiplicative "\\" r:Modulative { return new F['\\'](l, r); }
+  / l:Multiplicative "mod" r:Modulative { return new F['mod'](l, r); }
   / Multiplicative
 
 Multiplicative
-  = left:Primary "*" right:Multiplicative { return left * right; }
+  = l:Primary "*" r:Multiplicative { return new F['*'](l, r); }
+  / l:Primary "/" r:Multiplicative { return new F['/'](l, r); }
+  / l:Primary "÷" r:Multiplicative { return new F['/'](l, r); }
   / Comparative
 
 Comparative
-  = left:Primary "<" right:Primary { return left < right; }
-  / left:Primary ">" right:Primary { return left > right; }
-  / Collocative
-
-Collocative
-  = left:Identifier " "+ right:Identifier { return new invocation(left, right) }
+  = l:Primary "<" r:Primary { return new F['<'](l, r); }
+  / l:Primary ">" r:Primary { return new F['>'](l, r); }
   / Primary
 
 Primary
@@ -115,7 +147,7 @@ BareIdentifier
   = id:IdentifierName { return new identifier(id) }
 
 IdentifierName
-  = !Keyword [a-zA-Z_]+
+  = !Keyword str:[a-zA-Z_]+ { return str.join('') }
 
 TypeSigil
   = '$'
@@ -128,12 +160,7 @@ Keyword
   / 'then'
   / 'else'
   / 'end'
-
-IfToken = 'if'
-ThenToken = 'then'
-ElseToken = 'else'
-EndIfToken = 'end if'
-
+  / 'mod'
 _
   = (WhiteSpace / MultiLineCommentNoLineTerminator / SingleLineComment)*
 
@@ -167,7 +194,7 @@ MultiLineCommentNoLineTerminator
   = "'{" (!("'{" / LineTerminator) SourceCharacter)* "}'"
 
 SingleLineComment
-  = "''" (!LineTerminator SourceCharacter)*
+  = "'" (!LineTerminator SourceCharacter)*
 
 EOS
   = __ ":"
