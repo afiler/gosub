@@ -5,6 +5,14 @@
 
   function jsStr(a) { return a.join('') }
   function jsInt(a) { return parseInt(a.join(''), 10) }
+
+  function rollup(head, tail) {
+    var result = [head];
+      for (var i = 0; i < tail.length; i++) {
+        result.push(tail[i][1]);
+      }
+      return result;
+  }
   
   invocation = function(fn, args) {
     this.fn = fn;
@@ -20,6 +28,11 @@
     this.toString = function() { return "«"+this.name+(this.sigil ? this.sigil : '')+"»" }
     this.dumpable = true;
   }
+
+  ifInvocation = function(cond, thenExpr, elseExpr) {
+    this.toString = function() { return cond+" ? "+thenExpr+" : "+elseExpr }
+    this.dumpable = true;
+  }
 }
 
 start
@@ -32,11 +45,7 @@ Program
 
 SourceElements
   = head:SourceElement tail:(__ SourceElement)* {
-      var result = [head];
-      for (var i = 0; i < tail.length; i++) {
-        result.push(tail[i][1]);
-      }
-      return result;
+      return rollup(head, tail)
     }
 
 SourceElement
@@ -47,7 +56,16 @@ Expression
   / Conditional
 
 Conditional
-  = "if" __ cond:Expression __ "then" __ then:Expression __ "end if" { return "("+cond+"?"+then+":)" }
+  = IfToken _ cond:Expression _
+    ThenToken _ thenExpr:Expression _
+    elseExpr:(ElseToken _ Expression _)?
+    EndIfToken?
+    { return new ifInvocation(cond, thenExpr, elseExpr !== null ? elseExpr[2] : null) }
+  / IfToken __ cond:Expression __
+    ThenToken __ thenExpr:Expression __
+    elseExpr:(ElseToken __ Expression __)?
+    EndIfToken
+    { return new ifInvocation(cond, thenExpr, elseExpr !== null ? elseExpr[2] : null) }
 
 Additive
   = left:Multiplicative "+" right:Additive { return left + right; }
@@ -91,10 +109,13 @@ Identifier
   / BareIdentifier
 
 TypedIdentifier
-  = id:[a-zA-Z_]+ sigil:TypeSigil { return new identifier(id, sigil) }
+  = id:IdentifierName sigil:TypeSigil { return new identifier(id, sigil) }
 
 BareIdentifier
-  = id:[a-zA-Z_]+ { return new identifier(id) }
+  = id:IdentifierName { return new identifier(id) }
+
+IdentifierName
+  = !Keyword [a-zA-Z_]+
 
 TypeSigil
   = '$'
@@ -102,7 +123,16 @@ TypeSigil
   / '!'
   / '#'
 
+Keyword
+  = 'if'
+  / 'then'
+  / 'else'
+  / 'end'
 
+IfToken = 'if'
+ThenToken = 'then'
+ElseToken = 'else'
+EndIfToken = 'end if'
 
 _
   = (WhiteSpace / MultiLineCommentNoLineTerminator / SingleLineComment)*
