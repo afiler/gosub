@@ -1,0 +1,155 @@
+{
+  var scope = {};
+  scope['hello'] = 'ohai';
+  scope['print'] = function(str) { console.log(str) }
+
+  function jsStr(a) { return a.join('') }
+  function jsInt(a) { return parseInt(a.join(''), 10) }
+  
+  invocation = function(fn, args) {
+    this.fn = fn;
+    this.args = args;
+    this.call = function(scope) { resolve(scope, fn)(resolve(scope, args)) }
+    this.toString = function() { return fn+"("+args+")"; }
+    this.dumpable = true;
+  }
+  
+  identifier = function(a, sigil) {
+    this.sigil = sigil;
+    this.name = a.join('');
+    this.toString = function() { return "«"+this.name+(this.sigil ? this.sigil : '')+"»" }
+    this.dumpable = true;
+  }
+}
+
+start
+  = __ program:Program __ { return program; }
+
+Program
+  = elements:SourceElements? {
+      return elements !== null ? elements : []
+    }
+
+SourceElements
+  = head:SourceElement tail:(__ SourceElement)* {
+      var result = [head];
+      for (var i = 0; i < tail.length; i++) {
+        result.push(tail[i][1]);
+      }
+      return result;
+    }
+
+SourceElement
+  = Expression
+
+Expression
+  = Additive
+  / Conditional
+
+Conditional
+  = "if" __ cond:Expression __ "then" __ then:Expression __ "end if" { return "("+cond+"?"+then+":)" }
+
+Additive
+  = left:Multiplicative "+" right:Additive { return left + right; }
+  / Multiplicative
+
+Multiplicative
+  = left:Primary "*" right:Multiplicative { return left * right; }
+  / Comparative
+
+Comparative
+  = left:Primary "<" right:Primary { return left < right; }
+  / left:Primary ">" right:Primary { return left > right; }
+  / Collocative
+
+Collocative
+  = left:Identifier " "+ right:Identifier { return new invocation(left, right) }
+  / Primary
+
+Primary
+  = Integer
+  / "(" Additive:Additive ")" { return Additive; }
+  / String
+  / Identifier
+
+Integer "integer"
+  = digits:[0-9]+ { return jsInt(digits)  }
+
+String
+  = '"' string:[^"]+ '"' { return jsStr(string); }
+  / InterpolableString
+
+InterpolableString
+  = '@"' string:InterpolableStringChar * '"' { return string.join(''); }
+
+InterpolableStringChar
+  = '@{' expr:Additive '}' { return expr }
+  / string:[^@"]+ { return string.join('') }
+
+Identifier
+  = TypedIdentifier
+  / BareIdentifier
+
+TypedIdentifier
+  = id:[a-zA-Z_]+ sigil:TypeSigil { return new identifier(id, sigil) }
+
+BareIdentifier
+  = id:[a-zA-Z_]+ { return new identifier(id) }
+
+TypeSigil
+  = '$'
+  / '%'
+  / '!'
+  / '#'
+
+
+
+_
+  = (WhiteSpace / MultiLineCommentNoLineTerminator / SingleLineComment)*
+
+__
+  = (WhiteSpace / LineTerminatorSequence / Comment)*
+
+SourceCharacter
+  = .
+
+WhiteSpace "whitespace"
+  = [\t\v\f \u00A0\uFEFF]
+
+LineTerminator
+  = [\n\r\u2028\u2029]
+
+LineTerminatorSequence "end of line"
+  = "\n"
+  / "\r\n"
+  / "\r"
+  / "\u2028" // line separator
+  / "\u2029" // paragraph separator
+
+Comment "comment"
+  = MultiLineComment
+  / SingleLineComment
+
+MultiLineComment
+  = "'{" (!"'{" SourceCharacter)* "}'"
+
+MultiLineCommentNoLineTerminator
+  = "'{" (!("'{" / LineTerminator) SourceCharacter)* "}'"
+
+SingleLineComment
+  = "''" (!LineTerminator SourceCharacter)*
+
+EOS
+  = __ ":"
+  / _ LineTerminatorSequence
+  / _ &"end if"
+  / __ EOF
+
+EOSNoLineTerminator
+  = _ ":"
+  / _ LineTerminatorSequence
+  / _ &"end if"
+  / _ EOF
+
+EOF
+  = !.
