@@ -1,60 +1,38 @@
 {
-  var scope = {};
-  scope['hello'] = 'ohai';
-  scope['print'] = function(str) { console.log(str) }
-
   function jsStr(a) { return a.join('') }
-  function jsInt(a) { return parseInt(a.join(''), 10) }
+  function jsInt(a, base) { var base = base ? base : 10; return parseInt(a.join(''), base) }
 
   function rollup(head, tail) {
     var result = [head];
-      for (var i = 0; i < tail.length; i++) {
-        result.push(tail[i][1]);
-      }
-      return result;
+    for (var i = 0; i < tail.length; i++) { result.push(tail[i][1]); }
+    return result;
   }
   
-  invocation = function(fn, args) {
-    this.fn = fn;
-    this.args = args;
-    this.call = function(scope) { resolve(scope, fn)(resolve(scope, args)) }
-    this.toString = function() { return fn+"("+args+")"; }
-  }
-  
-  identifier = function(name, sigil) {
+  Id = function(name, sigil) {
+    this.name = name+(sigil ? sigil : '');
     this.sigil = sigil;
-    this.name = name;
-    this.toString = function() { return "«"+this.name+(this.sigil ? this.sigil : '')+"»" }
+    this.toString = function() { return "«"+this.name+"»" }
   }
 
-  F = {
-    if: function(cond, thenExpr, elseExpr) {
-      this.toString = function() { return cond+" ? "+thenExpr+" : "+elseExpr }
-    },
-    '<': function(l, r) {
-      this.toString = function() { return l+"<"+r }
-    },
-    '>': function(l, r) {
-      this.toString = function() { return l+">"+r }
-    },
-    '+': function(l, r) {
-      this.toString = function() { return l+"+"+r }
-    },
-    '-': function(l, r) {
-      this.toString = function() { return l+"-"+r }
-    },
-    '\\': function(l, r) {
-      this.toString = function() { return l+"\\"+r }
-    },
-    'mod': function(l, r) {
-      this.toString = function() { return l+" mod "+r }
-    },
-    '*': function(l, r) {
-      this.toString = function() { return l+"*"+r }
-    },
-    '/': function(l, r) {
-      this.toString = function() { return l+"/"+r }
-    },
+  Fn = function(id, args) {
+    this.id = id
+    this.args = args;
+    this.toString = function() { return this.id.name+"("+args+")" }
+  }
+  
+  Block = function(block) {
+    var self = this
+    this.block = block
+    this.toString = function() { return "Block { "+this.block+" }" }
+    this.apply = function(that, args) {
+      return window.gosub.call(self)
+    }
+  }
+  
+  function F(name, args) {
+    var args = [].slice.call(arguments)
+    var name = args.shift()
+    return new Fn(new Id(name), args);
   }
 }
 
@@ -68,52 +46,64 @@ Program
 
 SourceElements
   = head:SourceElement tail:(__ SourceElement)* {
-      return rollup(head, tail)
+      return new Block(rollup(head, tail))
     }
 
 SourceElement
-  = Invocation
-  
-Invocation
-  = left:Identifier _ right:Expression { return new invocation(left, right) }
+  = Assignment
+  / Definition
   / Expression
 
+Definition
+  = 'def'i _ id:Identifier __ block:SourceElements __ 'end def'i { return F('def', id.name, block) }
+
+Assignment
+  = l:Identifier _ '=' _ r:Expression { return F('def', l.name, r) }
+  
 Expression
+  = l:Identifier _ r:Expression { return new Fn(l, r) }
+  / NonInvokingExpressionList
+
+NonInvokingExpressionList
+  = l:NonInvokingExpression _ ',' _ r:NonInvokingExpressionList { return [l, r] }
+  / NonInvokingExpression
+
+NonInvokingExpression
   = Additive
   / Conditional
   / Identifier
 
 Conditional
-  = 'if' _ cond:Expression _
-    'then' _ thenExpr:Expression _
-    elseExpr:('else' _ Expression _)?
-    'end if'?
-    { return new F.if(cond, thenExpr, elseExpr !== null ? elseExpr[2] : null) }
-  / 'if' __ cond:Expression __
-    'then' __ thenExpr:Expression __
-    elseExpr:('else' __ Expression __)?
-    'end if'
-    { return new F.if(cond, thenExpr, elseExpr !== null ? elseExpr[2] : null) }
+  = 'if'i _ cond:Expression _
+    'then'i _ thenExpr:Expression _
+    elseExpr:('else'i _ Expression _)?
+    'end if'i?
+    { return F('if', cond, thenExpr, elseExpr !== null ? elseExpr[2] : null) }
+  / 'if'i __ cond:Expression __
+    'then'i __ thenExpr:Expression __
+    elseExpr:('else'i __ Expression __)?
+    'end if'i
+    { return F('if', cond, thenExpr, elseExpr !== null ? elseExpr[2] : null) }
 
 Additive
-  = l:Modulative "+" r:Additive { return new F['+'](l, r); }
-  / l:Modulative "-" r:Additive { return new F['-'](l, r); }
+  = l:Modulative _ "+" _ r:Additive { return F('+', l, r) }
+  / l:Modulative _ "-" _ r:Additive { return F('-', l, r) }
   / Modulative
   
 Modulative
-  = l:Multiplicative "\\" r:Modulative { return new F['\\'](l, r); }
-  / l:Multiplicative "mod" r:Modulative { return new F['mod'](l, r); }
+  = l:Multiplicative _ "\\" _ r:Modulative { return F('\\', l, r) }
+  / l:Multiplicative _ "mod"i _ r:Modulative { return F('mod', l, r) }
   / Multiplicative
 
 Multiplicative
-  = l:Primary "*" r:Multiplicative { return new F['*'](l, r); }
-  / l:Primary "/" r:Multiplicative { return new F['/'](l, r); }
-  / l:Primary "÷" r:Multiplicative { return new F['/'](l, r); }
+  = l:Primary _ "*" _ r:Multiplicative { return F('*', l, r) }
+  / l:Primary _ "/" _ r:Multiplicative { return F('/', l, r) }
+  / l:Primary _ "÷" _ r:Multiplicative { return F('/', l, r) }
   / Comparative
 
 Comparative
-  = l:Primary "<" r:Primary { return new F['<'](l, r); }
-  / l:Primary ">" r:Primary { return new F['>'](l, r); }
+  = l:Primary _ "<" _ r:Primary { return F('<', l, r) }
+  / l:Primary _ ">" _ r:Primary { return F('>', l, r) }
   / Primary
 
 Primary
@@ -141,10 +131,10 @@ Identifier
   / BareIdentifier
 
 TypedIdentifier
-  = id:IdentifierName sigil:TypeSigil { return new identifier(id, sigil) }
+  = id:IdentifierName sigil:TypeSigil { return new Id(id, sigil) }
 
 BareIdentifier
-  = id:IdentifierName { return new identifier(id) }
+  = id:IdentifierName { return new Id(id) }
 
 IdentifierName
   = !Keyword str:[a-zA-Z_]+ { return str.join('') }
@@ -156,11 +146,12 @@ TypeSigil
   / '#'
 
 Keyword
-  = 'if'
-  / 'then'
-  / 'else'
-  / 'end'
-  / 'mod'
+  = 'if'i
+  / 'then'i
+  / 'else'i
+  / 'end'i
+  / 'mod'i
+  / 'def'i
 _
   = (WhiteSpace / MultiLineCommentNoLineTerminator / SingleLineComment)*
 
