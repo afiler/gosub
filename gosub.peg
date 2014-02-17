@@ -8,6 +8,10 @@
     return result;
   }
   
+  function flatten() {
+    return [].concat.apply([], arguments)
+  }
+  
   Id = function(name, sigil) {
     this.name = name+(sigil ? sigil : '');
     this.sigil = sigil;
@@ -18,6 +22,11 @@
     this.id = id
     this.args = args;
     this.toString = function() { return this.id.name+"("+args+")" }
+  }
+
+  Tuple = function(items) {
+    this.items = items
+    this.toString = function() { return "Tuple("+items.join(',')+")" }
   }
   
   Block = function(block) {
@@ -58,18 +67,19 @@ Definition
   = 'def'i _ id:Identifier __ block:SourceElements __ 'end def'i { return F('def', id.name, block) }
 
 Assignment
-  = l:Identifier _ '=' _ r:Expression { return F('def', l.name, r) }
+  = l:Identifier _ '=' __ r:Expression { return F('def', l.name, r) }
   
 Expression
   = l:Identifier _ r:Expression { return new Fn(l, r) }
-  / NonInvokingExpressionList
+  / ValueList
 
-NonInvokingExpressionList
-  = l:NonInvokingExpression _ ',' _ r:NonInvokingExpressionList { return [l, r] }
-  / NonInvokingExpression
+ValueList
+  = l:Value _ ',' __ r:ValueList { return flatten(l, r) }
+  / Value
 
-NonInvokingExpression
-  = Additive
+Value
+  = '(' __ l:Value _ ',' __ r:Value  __ ')' { return new Tuple(flatten(l, r)) }
+  / Additive
   / Conditional
   / Identifier
 
@@ -113,7 +123,7 @@ Equality
 
 Primary
   = Integer
-  / "(" Additive:Additive ")" { return Additive; }
+  / "(" value:Value ")" { return value; }
   / String
   / Identifier
 
@@ -122,6 +132,7 @@ Integer "integer"
 
 String
   = '"' string:[^"]+ '"' { return jsStr(string); }
+  / SymbolName
   / InterpolableString
 
 InterpolableString
@@ -143,6 +154,9 @@ BareIdentifier
 
 IdentifierName
   = !Keyword str:[a-zA-Z_]+ { return str.join('') }
+
+SymbolName
+  = str:('#' [a-zA-Z_0-9]+) { return str.join('') }
 
 TypeSigil
   = '$'

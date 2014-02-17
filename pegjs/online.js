@@ -92,7 +92,7 @@ $(document).ready(function() {
     $("#parse-message").attr("class", "message progress").text("Parsing the input...");
     $("#output").addClass("disabled").text("Output not available.");
 
-    //try {
+    try {
       var timeBefore = (new Date).getTime();
       var output = parser.parse($("#input").val());
       var timeAfter = (new Date).getTime();
@@ -110,11 +110,11 @@ $(document).ready(function() {
       gosubTerm(output);
 
       var result = true;
-    // } catch (e) {
- //      $("#parse-message").attr("class", "message error").text(buildErrorMessage(e));
- // 
- //      var result = false;
- //    }
+     } catch (e) {
+      $("#parse-message").attr("class", "message error").text(buildErrorMessage(e));
+ 
+      var result = false;
+    }
 
     doLayout();
     return result;

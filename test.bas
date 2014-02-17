@@ -1,3 +1,15 @@
+def open
+  22
+end def
+
+open "r", #1, "infofile", (34, 54), 17
+
+def ts
+  print "thirty-seven"
+  37
+end def
+
+ts 1
 
 x=3
 3
@@ -16,8 +28,8 @@ end if
 if raining then 4 else 3
 if 3 then 5 end if
 
-def "monkey", "ook"
-def "monkey$", "OOK"
+monkey="ook"
+monkey$="OOK"
 
 @"moose @{3+3}"
 @"the cat says @{hello}"
