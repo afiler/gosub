@@ -19,6 +19,7 @@ window.gosub = {
       mod: function(l, r) { return l % r },
       '/': function(l, r) { return l / r },
       '*': function(l, r) { return l * r },
+      '==': function(l, r) { return l === r},
     
       print: function(args) { window.green(args); return "green("+args+")" },
       def: function(k, v) { console.log('DEF %s %s', k, v); return window.gosub.scope[k] = v },

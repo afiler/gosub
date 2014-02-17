@@ -96,14 +96,19 @@ Modulative
   / Multiplicative
 
 Multiplicative
-  = l:Primary _ "*" _ r:Multiplicative { return F('*', l, r) }
-  / l:Primary _ "/" _ r:Multiplicative { return F('/', l, r) }
-  / l:Primary _ "÷" _ r:Multiplicative { return F('/', l, r) }
+  = l:Comparative _ "*" _ r:Multiplicative { return F('*', l, r) }
+  / l:Comparative _ "/" _ r:Multiplicative { return F('/', l, r) }
+  / l:Comparative _ "÷" _ r:Multiplicative { return F('/', l, r) }
   / Comparative
 
 Comparative
-  = l:Primary _ "<" _ r:Primary { return F('<', l, r) }
-  / l:Primary _ ">" _ r:Primary { return F('>', l, r) }
+  = l:Equality _ "<" _ r:Comparative { return F('<', l, r) }
+  / l:Equality _ ">" _ r:Comparative { return F('>', l, r) }
+  / Equality
+
+Equality
+  = l:Primary _ '==' _ r:Equality { return F('==', l, r) }
+  / l:Primary _ '=' _ r:Equality { return F('==', l, r) }
   / Primary
 
 Primary
