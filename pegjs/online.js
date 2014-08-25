@@ -44,7 +44,7 @@ $(document).ready(function() {
     $("#option-optimize").attr("disabled", "disabled");
     $("#parser-download").addClass("disabled");
 
-    try {
+    //try {
       var timeBefore = (new Date).getTime();
       var parserSource = PEG.buildParser($("#grammar").val(), {
         cache:    $("#option-cache").is(":checked"),
@@ -72,14 +72,14 @@ $(document).ready(function() {
       $("#parser-download").removeClass("disabled").attr("href", parserUrl);
 
       var result = true;
-    } catch (e) {
-      $("#build-message").attr("class", "message error").text(buildErrorMessage(e));
-      var parserUrl = "data:text/plain;charset=utf-8;base64,"
-        + Base64.encode("Parser not available.");
-      $("#parser-download").attr("href", parserUrl);
-
-      var result = false;
-    }
+    // } catch (e) {
+//       $("#build-message").attr("class", "message error").text(buildErrorMessage(e));
+//       var parserUrl = "data:text/plain;charset=utf-8;base64,"
+//         + Base64.encode("Parser not available.");
+//       $("#parser-download").attr("href", parserUrl);
+//
+//       var result = false;
+//     }
 
     doLayout();
     return result;
@@ -92,7 +92,7 @@ $(document).ready(function() {
     $("#parse-message").attr("class", "message progress").text("Parsing the input...");
     $("#output").addClass("disabled").text("Output not available.");
 
-    try {
+    //try {
       var timeBefore = (new Date).getTime();
       var output = parser.parse($("#input").val());
       var timeAfter = (new Date).getTime();
@@ -110,11 +110,11 @@ $(document).ready(function() {
       gosubTerm(output);
 
       var result = true;
-     } catch (e) {
-      $("#parse-message").attr("class", "message error").text(buildErrorMessage(e));
- 
-      var result = false;
-    }
+     // } catch (e) {
+//       $("#parse-message").attr("class", "message error").text(buildErrorMessage(e));
+//
+//       var result = false;
+//     }
 
     doLayout();
     return result;
