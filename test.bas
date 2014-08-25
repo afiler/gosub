@@ -1,8 +1,22 @@
+x=1
+if x=1 then x=2 ' should be 2, not true
+
+foobar$ = "foo" + "bar"
+print foobar$
+
+x = if 1 > 2 then "impossible" else "possible"
+
 def open
   22
 end def
 
-open "r", #1, "infofile", (34, 54), 17
+'open "r", #1, "infofile", (34, 54), 17
+
+def plot
+33
+end def
+
+plot (1, 10)-(10, 20)
 
 def ts
   print "thirty-seven"
