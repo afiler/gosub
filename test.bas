@@ -1,5 +1,3 @@
-schmu("schmar")
-
 def open
   22
 end def
