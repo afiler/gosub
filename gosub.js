@@ -5,6 +5,59 @@ function debug() {
   if (DEBUG) console.log.apply(console, arguments)
 }
 
+function jsStr(a) { return a.join('') }
+function jsInt(a, base) { var base = base ? base : 10; return parseInt(a.join(''), base) }
+
+function rollup(head, tail) {
+  var result = [head];
+  for (var i = 0; i < tail.length; i++) { result.push(tail[i][1]); }
+  return result;
+}
+
+function flatten() {
+  return [].concat.apply([], arguments)
+}
+
+Id = function(name, sigil) {
+  this.name = name+(sigil ? sigil : '');
+  this.sigil = sigil;
+  this.toString = function() { return "«"+this.name+"»" }
+  this.resolve = function(scope) { return scope[id] }
+}
+
+Fn = function(id, args) {
+  this.id = id
+  this.args = args;
+  this.toString = function() { return this.id.name+"("+args+")" }
+  this.resolve = function(scope) { return scope[id].call(undefined, args) }
+}
+
+Tuple = function(items) {
+  this.items = items
+  this.toString = function() { return "Tuple("+items.join(',')+")" }
+}
+
+Block = function(block) {
+  var self = this
+  this.block = block
+  this.toString = function() { return "Block { "+this.block+" }" }
+  this.apply = function(that, args) {
+    return window.gosub.call(self)
+  }
+}
+
+Span = function(elements) {
+  this.resolve = function(scope) {
+    var val
+    elements.forEach(function (el) {
+      val = window.gosub.resolve(el)
+      window.write(el + "\n -> " + self.inspect(val))
+    })
+    return val
+  }
+}
+  
+/* ##################### */
 window.gosub = {
   scope: {},
   
@@ -38,10 +91,22 @@ window.gosub = {
     console.log(block)
     block.block.forEach(function (el) {
       val = self.resolve(el)
-      window.write(el + "\n" + val)
+      window.write(el + "\n -> " + self.inspect(val))
     })
     
+    block.block.forEach(function (el) {
+      val = self.resolve(el)
+      window.write(el + "\n -> " + self.inspect(val))
+    })
+    
+    
     return val
+  },
+  
+  inspect: function(val) {
+    if (!val) return '‘null’';
+    else if (val.constructor == String) return '"'+val+'"'
+    else return val;
   },
 
   resolve: function (el) {

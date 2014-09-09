@@ -1,52 +1,17 @@
 {
-  function jsStr(a) { return a.join('') }
-  function jsInt(a, base) { var base = base ? base : 10; return parseInt(a.join(''), base) }
-
-  function rollup(head, tail) {
-    var result = [head];
-    for (var i = 0; i < tail.length; i++) { result.push(tail[i][1]); }
-    return result;
-  }
-  
-  function flatten() {
-    return [].concat.apply([], arguments)
-  }
-  
-  Id = function(name, sigil) {
-    this.name = name+(sigil ? sigil : '');
-    this.sigil = sigil;
-    this.toString = function() { return "«"+this.name+"»" }
-  }
-
-  Fn = function(id, args) {
-    this.id = id
-    this.args = args;
-    this.toString = function() { return this.id.name+"("+args+")" }
-  }
-
-  Tuple = function(items) {
-    this.items = items
-    this.toString = function() { return "Tuple("+items.join(',')+")" }
-  }
-  
-  Block = function(block) {
-    var self = this
-    this.block = block
-    this.toString = function() { return "Block { "+this.block+" }" }
-    this.apply = function(that, args) {
-      return window.gosub.call(self)
-    }
-  }
-  
   function F(name, args) {
     var args = [].slice.call(arguments)
     var name = args.shift()
-    return new Fn(new Id(name), args);
+    return new Fn(new Id(name), args)
   }
+  
+  function B(block) { return new Block(block) }
+  function T(items) { return new Tuple(items) }
+  function I(id)    { return new Id(name, sigil) }
 }
 
 start
-  = __ program:Program __ { return program; }
+  = __ program:Program __ { return program }
 
 Program
   = elements:SourceElements? {
@@ -78,8 +43,7 @@ ValueList
   / Value
 
 Value
-  = '(' __ l:Value _ ',' __ r:Value  __ ')' { return new Tuple(flatten(l, r)) }
-  / Additive
+  = Additive
   / Conditional
   / Identifier
 
@@ -123,6 +87,7 @@ Equality
 
 Primary
   = Integer
+  / '(' valueList:ValueList ')' { return new Tuple(flatten(valueList)) }
   / "(" value:Value ")" { return value; }
   / String
   / Identifier
