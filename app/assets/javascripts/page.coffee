@@ -1,7 +1,7 @@
-pegUrl = '/assets/gosub.peg'
+pegUrl = '/gosub.peg'
 
 source = ->
-  $('.source textarea').val()
+  $('.source').val()
 
 screen = ->
   $('.screen')
@@ -14,8 +14,20 @@ build = ->
       output:   "source"
     
     parser = eval parserSource
-    output = parser.parse source()
-    window.output = output
-    screen().append($('<pre>').text(""+output))
+    parser.parse source()
 
-window.build = build
+window.run = ->
+  build().then (output) ->
+    window.write output
+  
+    window.gosub.run output
+
+window.write = (text) ->
+  screen().append($('<pre>').text(""+text))
+
+window.green = (text) ->
+  screen().append($('<pre style="color: yellow">').text(""+text))
+
+$ ->
+  $.get('/test.bas').then (file) ->
+    $('.source').val(file)

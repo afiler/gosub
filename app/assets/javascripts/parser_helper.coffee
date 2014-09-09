@@ -31,18 +31,18 @@
     "«" + @name + "»"
 
   @resolve = (scope) ->
-    scope[id]
+    scope[ident]
 
   return
 
-@Fn = (id, args) ->
-  @id = id
+@Fn = (ident, args) ->
+  @ident = ident
   @args = args
   @toString = ->
-    @id.name + "(" + args + ")"
+    @ident.name + "(" + args + ")"
 
   @resolve = (scope) ->
-    scope[id].call `undefined`, args
+    scope[ident].call `undefined`, args
 
   return
 

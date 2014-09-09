@@ -1,3 +1,5 @@
+#= require jsDump
+
 # ##################### 
 window.gosub =
   scope: {}
@@ -52,7 +54,6 @@ window.gosub =
           window.gosub.scope[k]
         else
           console.log "UNDEFINED: %s", k
-        return
 
     return
 
@@ -62,19 +63,12 @@ window.gosub =
     return
 
   call: (block) ->
-    self = this
     console.log block
-    block.block.forEach (el) ->
-      val = self.resolve(el)
-      window.write el + "\n -> " + self.inspect(val)
-      return
+    block.block.forEach (el) =>
+      val = @resolve(el)
+      window.write el + "\n -> " + @inspect(val)
 
-    block.block.forEach (el) ->
-      val = self.resolve(el)
-      window.write el + "\n -> " + self.inspect(val)
-      return
-
-    val
+    return #val
 
   inspect: (val) ->
     unless val
@@ -88,10 +82,10 @@ window.gosub =
     debug "resolve(%o)", el
     return  unless el
     if el.constructor is Fn
-      debug "Resolving Fn %s", el.id
-      resolved_fn = self.resolve(el.id)
+      debug "Resolving Fn %s", el.ident
+      resolved_fn = @resolve(el.ident)
       debug "resolved_fn %s", resolved_fn
-      resolved_args = self.resolve(el.args)
+      resolved_args = @resolve(el.args)
       debug "preresolved_args %s length %d", jsDump.parse(resolved_args), resolved_args.length
       debug "preresolved_args (%o)", resolved_args
       resolved_args = [resolved_args]  unless resolved_args.constructor is Array
@@ -116,8 +110,8 @@ window.gosub =
       val
     else if el.constructor is Array
       debug "Resolving array %s", el
-      el.map (x) ->
-        self.resolve x
+      el.map (x) =>
+        @resolve x
 
     
     # } else if (el.constructor == Block) {
