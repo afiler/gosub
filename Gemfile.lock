@@ -46,6 +46,7 @@ PLATFORMS
 
 DEPENDENCIES
   coffee-script
+  rack
   sinatra
   sinatra-asset-pipeline
   slim
