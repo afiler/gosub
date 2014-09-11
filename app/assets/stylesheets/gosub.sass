@@ -10,19 +10,28 @@ body
   padding: 0
   background-color: black
   color: green
-  overflow: scroll
+  overflow: hidden
+  font-family: 'Unifont'
   
   .screen
     width: 100%
-    height: 100%
+    height: calc(100% - 3em)
     padding: 10px
     background-color: black
     float: left
-
-    font-family: 'Unifont'
-
-    pre
-      font-family: 'Unifont' //'Perfect DOS VGA 437'
+    overflow: scroll
+      
+  .command-line
+    width: 100%
+    height: 2em
+    bottom: 0
+    padding: 0 10px
+    
+    background-color: #222
+    color: inherit
+    border: none
+    font-family: inherit
+    font-size: inherit
 
 .source-pane
   position: fixed

@@ -23,10 +23,10 @@ window.run = ->
     window.gosub.run output
 
 window.write = (text) ->
-  screen().append($('<pre>').text(""+text))
+  screen().append($('<p>').text(""+text))
 
 window.green = (text) ->
-  screen().append($('<pre style="color: yellow">').text(""+text))
+  screen().append($('<p style="color: yellow">').text(""+text))
 
 $ ->
   $.get('/test.bas').then (file) ->
