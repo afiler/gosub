@@ -24,9 +24,31 @@ SourceElements
     }
 
 SourceElement
-  = Assignment
+  = KeywordExpression
+  / Assignment
   / Definition
   / Expression
+
+KeywordExpression
+  = 'if'i _ cond:Expression _
+    'then'i _ thenExpr:Expression _
+    elseExpr:('else'i _ Expression _)?
+    'end if'i?
+    { return F('if', cond, thenExpr, elseExpr !== null ? elseExpr[2] : null) }
+  / 'if'i __ cond:Expression __
+    'then'i __ thenExpr:Expression __
+    elseExpr:('else'i __ Expression __)?
+    'end if'i
+    { return F('if', cond, thenExpr, elseExpr !== null ? elseExpr[2] : null) }
+  / 'for'i _ id1:Identifier _? "=" _? start:Expression _ 'to'i _ stop:Expression
+    (_ 'step'i step:Expression)?
+    __ forExpr:Expression __
+    'next'i _ id2:Identifier
+    { 
+      step = typeof step == 'undefined' ? null : step
+      if (id1.name != id2.name) throw new SyntaxError("Mismatch in for/next, expected 'next "+id1.name+"', found 'next "+id2.name+"'", id1, id2, offset, line, column)
+      return F('for', id1, start, stop, step, forExpr)
+    }
 
 Definition
   = 'def'i _ id:Identifier __ block:SourceElements __ 'end def'i { return F('def', id.name, block) }
@@ -44,21 +66,8 @@ ValueList
 
 Value
   = Additive
-  / Conditional
   / Identifier
-
-Conditional
-  = 'if'i _ cond:Expression _
-    'then'i _ thenExpr:Expression _
-    elseExpr:('else'i _ Expression _)?
-    'end if'i?
-    { return F('if', cond, thenExpr, elseExpr !== null ? elseExpr[2] : null) }
-  / 'if'i __ cond:Expression __
-    'then'i __ thenExpr:Expression __
-    elseExpr:('else'i __ Expression __)?
-    'end if'i
-    { return F('if', cond, thenExpr, elseExpr !== null ? elseExpr[2] : null) }
-
+  
 Additive
   = l:Modulative _ "+" _ r:Additive { return F('+', l, r) }
   / l:Modulative _ "-" _ r:Additive { return F('-', l, r) }

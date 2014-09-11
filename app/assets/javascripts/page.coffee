@@ -7,10 +7,10 @@ screen = ->
   $('.screen')
 
 build = ->
-  $.get(pegUrl).then (grammar) ->
+  $.get("#{pegUrl}?#{Date.now()}").then (grammar) ->
     parserSource = PEG.buildParser grammar,
-      cache:    true,
-      optimize: true,
+      cache:    false,
+      optimize: false,
       output:   "source"
     
     parser = eval parserSource
