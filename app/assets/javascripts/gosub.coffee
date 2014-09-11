@@ -1,53 +1,13 @@
 #= require jsDump
+#= require gsbasic
 
 # ##################### 
 window.gosub =
   scope: {}
   resetScope: ->
-    window.gosub.scope =
-      if: (a, b, c) ->
-        debug "if(%s,%s,%s)", a, b, c
-        (if a then b else c)
-
-      "<": (l, r) ->
-        l < r
-
-      ">": (l, r) ->
-        l > r
-
-      "+": (l, r) ->
-        l + r
-
-      "-": (l, r) ->
-        l - r
-
-      "\\": (l, r) ->
-        Number(l) / Number(r)
-
-      mod: (l, r) ->
-        l % r
-
-      "/": (l, r) ->
-        l / r
-
-      "*": (l, r) ->
-        l * r
-
-      "==": (l, r) ->
-        l is r
-
-      print: (args) ->
-        window.green args
-        "green(" + args + ")"
-
-      def: (k, v) ->
-        console.log "DEF %s %s", k, v
-        window.gosub.scope[k] = v
-
-      let: (args) ->
-        args
-
-      _get: (k) ->
+    window.gosub.scope = gsbasic()
+      
+    window.gosub.scope._get = (k) ->
         v = window.gosub.scope[k]
         console.log "GET %s => %s", k, v
         if v
