@@ -67,13 +67,13 @@ NOP = noOp = (arg) -> arg
   clear:          NI 'weird BASIC things'
   close:          NI 'file'
   cls: ->         Screen.clear()
-  color:          NI 'fancy terminal'
+  color:          NI 'terminal'
   com:            NI 'serial'
   common:         NI 'weird BASIC things'
   cont:           NI 'break'
   cos: (x) ->     Math.cos(x)
   csng: (x) ->    Number(x) # FIXME?
-  csrlin:         NI 'fancy terminal'
+  csrlin:         NI 'terminal'
   cvi:            NI 'serialization'
   cvs:            NI 'serialization'
   cvd:            NI 'serialization'
@@ -106,9 +106,43 @@ NOP = noOp = (arg) -> arg
   exterr:         NI 'DOS'
   field:          NI 'file'
   files:          NI 'file'
-  fix: (x) ->     Math.floor(Math.abs(x))
+  fix: (x) ->     sgn(x)*int(abs(x))
   for: (id, start, stop, step, forExpr) ->
     NI 'WIP'
+  fre:            524288 # XXX?
+  get:            NI 'file', 'graphics'
+  gosub:          NI 'line numbering'
+  goto:           NI 'line numbering'
+  hex$: (x) ->    Number(x).toString(16)
+  inkey$:         NI 'paren-less resolution'
+  inp:            NI 'hardware'
+  input:          NI 'terminal'
+  input$:         NI 'terminal'
+  'input#':       NI 'terminal'
+  instr: (n, x$, y$=null) ->
+    if y$ == null
+      y$ = x$
+      x$ = n
+      n = 1
+    String(x$).indexOf(y$, n-1) + 1
+  int: (x) ->     Math.floor(x)
+  ioctl:          NI 'file'
+  ioctl$:         NI 'file'
+  key:            NI 'terminal' # two variants, key and key()
+  kill:           NI 'file'
+  left: (x$, n) ->
+    String(x$).substr(0, n)
+  len: (x$) ->    String(x$).length
+  line:           NI 'graphics'
+  list:           NI 'terminal', 'line numbering'
+  llist:          NI 'terminal', 'line numbering', 'printer'
+  load:           NI 'file'
+  loc:            NI 'file'
+  locate:         NI 'terminal'
+  lock:           NI 'file'
+  lof:            NI 'file'
+  log: (x) ->     Math.log(x)
+  
   
   
   # unimplemented/needs syntax support
@@ -116,3 +150,5 @@ NOP = noOp = (arg) -> arg
   # DEF FNAB(X, Y)=X^3/Y^2
   # DEF SEG=&HB800
   # DEF USR0=24000
+  # LINE INPUT
+  # LINE INPUT#
