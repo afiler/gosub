@@ -4,6 +4,7 @@ NOP = noOp = (arg) -> arg
 
 @gsbasic = ->
   _DATA = []
+  _DATA_IDX = 0
   _ENVIRON = {}
   _ERRNO = null
   
@@ -142,13 +143,55 @@ NOP = noOp = (arg) -> arg
   lock:           NI 'file'
   lof:            NI 'file'
   log: (x) ->     Math.log(x)
+  lpos:           NI 'printer'
+  lprint:         NI 'printer'
+  lset:           NI 'syntax'
+  merge:          NI 'file', 'line numbering'
+  mid$: (x$, n, m) ->
+    String(x$).substr(n-1, m)
+  mkdir:          NI 'file'
+  mkd$: (x) ->    String(x)
+  mki$: (x) ->    String(x)
+  mks$: (x) ->    String(x)
+  name:           NI 'file'
+  new:            NI 'line numbering'
+  oct$: (x)       Number(x).toString(8)
+  on:             NI 'events'
+  open:           NI 'file'
+  option: (base) ->
+    NI 'fixme'
+  out:            NI 'hardware'
+  paint:          NI 'graphics'
+  palette:        NI 'graphics'
+  pcopy:          NI 'terminal', 'graphics'
+  peek:           NI 'memory'
+  pen:            NI 'hardware'
+  play:           NI 'audio'
+  pmap:           NI 'graphics'
+  point:          NI 'graphics'
+  poke:           NI 'memory'
+  pos:            NI 'terminal'
+  preset:         NI 'graphics'
+  pset:           preset
+  put:            NI 'file', 'graphics'
+  randomize:      NI 'prng'
+  read: ()
   
+  
+  # For statements with spaces
+  base: ->        T('base', arguments)
+  using: (template, args) ->
+    NI 'fixme'
   
   
   # unimplemented/needs syntax support
+  # DATA needs to execute upon parsing
   # DATE$=v$
   # DEF FNAB(X, Y)=X^3/Y^2
   # DEF SEG=&HB800
   # DEF USR0=24000
   # LINE INPUT
   # LINE INPUT#
+  # LSET X$=Y$
+  # MID$(A$, 14)="KS"
+  # READ A(I)
