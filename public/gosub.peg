@@ -49,6 +49,8 @@ KeywordExpression
       if (id1.name != id2.name) throw new SyntaxError("Mismatch in for/next, expected 'next "+id1.name+"', found 'next "+id2.name+"'", id1, id2, offset, line, column)
       return F('for', id1, start, stop, step, forExpr)
     }
+  / 'while'i _ cond:Expression __ whileExpr:Expression __ 'wend'
+    { return F('while', cond, whileExpr) }
 
 Definition
   = 'def'i _ id:Identifier __ block:SourceElements __ 'end def'i { return F('def', id.name, block) }

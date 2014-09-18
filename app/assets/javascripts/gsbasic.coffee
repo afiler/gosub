@@ -79,9 +79,10 @@ NOP = noOp = (arg) -> arg
   cvs:            NI 'serialization'
   cvd:            NI 'serialization'
   data: (x...) -> _DATA.push x...
-  date: -> # needs paren-less resolution
+  date$: ->
+    @__autoresolve = true
     now = new Date()
-    "#{now.getMonth()}-#{now.getDate()}-#{now.getFullYear()}"
+    "#{pad2 now.getMonth()}-#{pad2 now.getDate()}-#{now.getFullYear()}"
   defint:         NOP
   defsng:         NOP
   defdbl:         NOP
@@ -175,15 +176,75 @@ NOP = noOp = (arg) -> arg
   pset:           preset
   put:            NI 'file', 'graphics'
   randomize:      NI 'prng'
-  read: ()
-  
+  read: ->        
+    error 0, 'Out of data' if _DATA_IDX >= _DATA.length # XXX: needs errno
+    _DATA[_DATA_IDX++]
+  rem: ->
+  renum:          NI 'line numbers'
+  reset:          NI 'file'
+  restore: (line) ->
+    return NI 'line numbers' if line
+    _DATA_IDX = 0
+  resume:         NI 'error', 'line numbering'
+  return:         NI 'ummmmmmmmm', 'line numbering'
+  right$: (x$, n) ->
+    String(x$).substr(0, 0-n)
+  rmdir:          NI 'file'
+  rnd: ->         Math.random()
+  rset: ->        NI 'syntax'
+  #run: (x) ->    NI 'line numbering' # XXX
+  save:           NI 'file', 'bare arguments'
+  screen:         NI 'terminal', 'graphics'
+  sgn: (x) ->     `x > 0 ? 1 : x < 0 ? -1 : 0`
+  shell:          NI 'os'
+  sin: (x) ->     Math.sin(x)
+  sound:          NI 'sound'
+  space$: (x) ->  Array(x+1).join(' ')
+  spc:            space$ # XXX is this the same thing? is it more like using tab()?
+  sqr: (x) ->     Math.sqrt(x)
+  stick:          NI 'joystick'
+  stop:           NI 'ummmmmmmmm'
+  str$: (x) ->    String(x)
+  strig:          NI 'joystick'
+  string$: (n, m) ->
+    m = String.fromCharCode(m) if typeof m == number
+    Array(n+1).join(String(m[0]))
+  swap:           NI 'syntax'
+  system:         NI 'ummmmmmmmm'
+  tab:            NI 'terminal'
+  tan: (x) ->     Math.tan(x)
+  time: ->
+    @__autoresolve = true
+    d = new Date()
+    "#{_pad2 d.getHours()}:#{_pad2 d.getMinutes()}:#{_pad2 d.getSeconds()}"
+  timer: -> 
+    @__autoresolve = true
+    Date.now()
+  tron:           NI 'ummmmmmmmm'
+  troff:          NI 'ummmmmmmmm'
+  unlock:         NI 'file'
+  usr:            NI 'assembly'
+  val: (x) ->     Number(x)
+  varptr:         NI 'file', 'memory'
+  varptr$:        NI 'memory'
+  view:           NI 'graphics'
+  wait:           NI 'hardware'
+  while: (cond, whileExpr) ->
+    while(cond.resolve())
+      whileExpr.resolve()
+  width:          NI 'terminal'
+  window:         NI 'graphics'
+  write: (args...) ->
+    String(args...) # XXX: needs spaces between arguments?
+  'write#':       NI 'file'
   
   # For statements with spaces
   base: ->        T('base', arguments)
   using: (template, args) ->
     NI 'fixme'
   
-  
+  _pad2: (number) ->
+    ("0" + number).slice(-2);
   # unimplemented/needs syntax support
   # DATA needs to execute upon parsing
   # DATE$=v$
@@ -195,3 +256,5 @@ NOP = noOp = (arg) -> arg
   # LSET X$=Y$
   # MID$(A$, 14)="KS"
   # READ A(I)
+  # RSET X$=Y$
+  
