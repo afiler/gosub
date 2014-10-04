@@ -156,7 +156,7 @@ NOP = noOp = (arg) -> arg
   mks$: (x) ->    String(x)
   name:           NI 'file'
   new:            NI 'line numbering'
-  oct$: (x)       Number(x).toString(8)
+  oct$: (x) ->    Number(x).toString(8)
   on:             NI 'events'
   open:           NI 'file'
   option: (base) ->
@@ -173,7 +173,7 @@ NOP = noOp = (arg) -> arg
   poke:           NI 'memory'
   pos:            NI 'terminal'
   preset:         NI 'graphics'
-  pset:           preset
+  pset:           @preset
   put:            NI 'file', 'graphics'
   randomize:      NI 'prng'
   read: ->        
@@ -200,7 +200,7 @@ NOP = noOp = (arg) -> arg
   sin: (x) ->     Math.sin(x)
   sound:          NI 'sound'
   space$: (x) ->  Array(x+1).join(' ')
-  spc:            space$ # XXX is this the same thing? is it more like using tab()?
+  spc:            @space$ # XXX is this the same thing? is it more like using tab()?
   sqr: (x) ->     Math.sqrt(x)
   stick:          NI 'joystick'
   stop:           NI 'ummmmmmmmm'
@@ -244,7 +244,8 @@ NOP = noOp = (arg) -> arg
     NI 'fixme'
   
   _pad2: (number) ->
-    ("0" + number).slice(-2);
+    ("0" + number).slice(-2)
+    
   # unimplemented/needs syntax support
   # DATA needs to execute upon parsing
   # DATE$=v$

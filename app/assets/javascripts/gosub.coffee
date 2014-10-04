@@ -26,7 +26,8 @@ window.gosub =
     console.log block
     block.block.forEach (el) =>
       val = @resolve(el)
-      window.write el + "\n -> " + @inspect(val)
+      window.writeln el
+      window.writeln " -> " + @inspect(val)
 
     return #val
 

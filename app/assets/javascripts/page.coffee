@@ -1,33 +1,52 @@
-pegUrl = '/gosub.peg'
+#= require 'screen'
 
-source = ->
-  $('.source').val()
+class GosubEnv
+  pegUrl = '/gosub.peg'
 
-screen = ->
-  $('.screen')
+  source = ->
+    $('.source').val()
 
-build = ->
-  $.get("#{pegUrl}?#{Date.now()}").then (grammar) ->
-    parserSource = PEG.buildParser grammar,
-      cache:    false,
-      optimize: false,
-      output:   "source"
+  screen = ->
+    $('.screen')
+
+  buildParser = ->
+    $.get("#{pegUrl}?#{Date.now()}").then (grammar) =>
+      parserSource = PEG.buildParser grammar,
+        cache:    true,
+        optimize: true,
+        output:   "source"
     
-    parser = eval parserSource
-    parser.parse source()
+      @parser = eval parserSource
 
-window.run = ->
-  build().then (output) ->
-    window.write output
+  window.run = ->
+    runSource source(), true
   
-    window.gosub.run output
+  runSource = (source, debug=false) ->
+    output = @parser.parse source
+    window.write output if debug
+    window.gosub.run @parser.parse(source)
 
-window.write = (text) ->
-  screen().append($('<p>').text(""+text))
+  window.write = (text) ->
+    scr.write text
+    
+  window.writeln = (text) ->
+    scr.writeln text
+  
+  window.green = (text) ->
+    scr.writeHtml $('<p style="color: yellow">').text(""+text)
 
-window.green = (text) ->
-  screen().append($('<p style="color: yellow">').text(""+text))
-
-$ ->
-  $.get('/test.bas').then (file) ->
-    $('.source').val(file)
+  $ ->
+    window.scr = new GsScreen $('.screen-pane')
+    scr.cls()
+    $.get('/test.bas').then (file) ->
+      $('.source').val(file)
+    
+    writeln 'Building parser'
+    buildParser().then ->
+      writeln 'Parser built'
+    
+    $('.screen-pane form').on 'submit', (e) ->
+      e.preventDefault()
+      source = $('.command-line').val()
+      runSource source, true
+      $('.command-line').val('')
