@@ -18,18 +18,17 @@ window.gosub =
     return
 
   run: (block) ->
-    @resetScope()
     @call block
-    return
 
   call: (block) ->
-    console.log block
+    #console.log block
+    val = undefined
     block.block.forEach (el) =>
       val = @resolve(el)
-      window.writeln el
-      window.writeln " -> " + @inspect(val)
+      #window.writeln el
+      #window.writeln " -> " + @inspect(val)
 
-    return #val
+    return val
 
   inspect: (val) ->
     unless val
@@ -73,7 +72,6 @@ window.gosub =
       debug "Resolving array %s", el
       el.map (x) =>
         @resolve x
-
     
     # } else if (el.constructor == Block) {
     #       debug('Resolving block %s', el.block)
@@ -81,3 +79,5 @@ window.gosub =
     else
       debug "Value? %o", el
       el
+      
+window.gosub.resetScope()

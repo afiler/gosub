@@ -14,11 +14,12 @@ class @GsScreen
   readline: (cb) ->
     @readlineCb = cb
     
-  write: (str) ->
-    str = $('<div/>').text(str).html()
-    @writeHtml str.replace('\n','<br/>')
+  write: (str, color) ->
+    el = $('<span>').text(str).html().replace('\n','<br/>')
+    el = $("<span style='color: #{color};'>").html(el) if color
+    @writeHtml el
     
-  writeln: (str) ->
+  writeln: (str='') ->
     @write "#{str}\n"
     
   writeHtml: (e) ->

@@ -132,7 +132,7 @@ IdentifierName
   = !Keyword str:[a-zA-Z_]+ { return str.join('') }
 
 SymbolName
-  = str:('#' [a-zA-Z_0-9]+) { return str.join('') }
+  = '#' str:[a-zA-Z_0-9]+ { return new Symbol(str) }
 
 TypeSigil
   = '$'

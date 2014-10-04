@@ -39,9 +39,14 @@ NOP = noOp = (arg) -> arg
   "==": (l, r) ->
     l is r
 
-  print: (args) ->
-    window.green args
-    "green(" + args + ")"
+  print: (args...) ->
+    for arg in args
+      if arg.constructor == Symbol
+        color = arg.val
+      else
+        window.scr.write arg, color
+    window.scr.writeln()
+    return
 
   def: (k, v) ->
     console.log "DEF %s %s", k, v

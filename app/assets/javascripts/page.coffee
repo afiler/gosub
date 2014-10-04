@@ -23,7 +23,7 @@ class GosubEnv
   
   runSource = (source, debug=false) ->
     output = @parser.parse source
-    window.write output if debug
+    window.writeln output if debug
     window.gosub.run @parser.parse(source)
 
   window.write = (text) ->
@@ -31,9 +31,6 @@ class GosubEnv
     
   window.writeln = (text) ->
     scr.writeln text
-  
-  window.green = (text) ->
-    scr.writeHtml $('<p style="color: yellow">').text(""+text)
 
   $ ->
     window.scr = new GsScreen $('.screen-pane')
@@ -48,5 +45,9 @@ class GosubEnv
     $('.screen-pane form').on 'submit', (e) ->
       e.preventDefault()
       source = $('.command-line').val()
-      runSource source, true
+      scr.write '<- '
+      scr.writeln source
+      result = runSource(source)
+      scr.write '-> '
+      scr.writeln result
       $('.command-line').val('')
