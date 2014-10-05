@@ -63,7 +63,7 @@ NOP = noOp = (arg) -> arg
   asc: (x) ->     String(x).charCodeAt(0)
   atn: (x) ->     Math.atan(x)
   auto:           NI 'line numbering'
-  beep:           NI 'sound'
+  beep: ->        Sound.play 400, 500
   bload:          NI 'file'
   bsave:          NI 'file'
   call:           NI 'assembly'
@@ -206,7 +206,8 @@ NOP = noOp = (arg) -> arg
   sgn: (x) ->     `x > 0 ? 1 : x < 0 ? -1 : 0`
   shell:          NI 'os'
   sin: (x) ->     Math.sin(x)
-  sound:          NI 'sound'
+  sound: (frequency, duration) ->
+    Sound.play frequency, duration / 18.2 * 1000
   space$: (x) ->  Array(x+1).join(' ')
   spc:            @space$ # XXX is this the same thing? is it more like using tab()?
   sqr: (x) ->     Math.sqrt(x)
