@@ -67,6 +67,7 @@ window.gosub =
     else if el.constructor is Id
       val = window.gosub.scope._get(el.name)
       debug "Resolving Id %s => %s", el, val
+      val = val.apply() if val and val.__autoresolve
       val
     else if el.constructor is Array
       debug "Resolving array %s", el

@@ -1,5 +1,3 @@
-#= require 'screen'
-
 class GosubEnv
   pegUrl = '/gosub.peg'
 

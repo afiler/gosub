@@ -1,12 +1,16 @@
 notImplemented = (features...) -> throw new Error("Not implemented, needs #{feature.join(',')} support")
 NI = (features...) -> -> notImplemented(features...)
 NOP = noOp = (arg) -> arg
+`Object.defineProperty(Function.prototype, 'autoresolve', { get: function() { this.__autoresolve = true; return this } })`
 
 @gsbasic = ->
   _DATA = []
   _DATA_IDX = 0
   _ENVIRON = {}
   _ERRNO = null
+  
+  pad2 = (number) ->
+    ("0" + number).slice(-2)
   
   if: (a, b, c) ->
     debug "if(%s,%s,%s)", a, b, c
@@ -49,7 +53,6 @@ NOP = noOp = (arg) -> arg
     return
 
   def: (k, v) ->
-    console.log "DEF %s %s", k, v
     window.gosub.scope[k] = v
 
   let: (args) ->
@@ -84,10 +87,10 @@ NOP = noOp = (arg) -> arg
   cvs:            NI 'serialization'
   cvd:            NI 'serialization'
   data: (x...) -> _DATA.push x...
-  date$: ->
-    @__autoresolve = true
+  date$: (->
     now = new Date()
     "#{pad2 now.getMonth()}-#{pad2 now.getDate()}-#{now.getFullYear()}"
+  ).autoresolve
   defint:         NOP
   defsng:         NOP
   defdbl:         NOP
@@ -218,13 +221,13 @@ NOP = noOp = (arg) -> arg
   system:         NI 'ummmmmmmmm'
   tab:            NI 'terminal'
   tan: (x) ->     Math.tan(x)
-  time: ->
-    @__autoresolve = true
+  time: (->
     d = new Date()
-    "#{_pad2 d.getHours()}:#{_pad2 d.getMinutes()}:#{_pad2 d.getSeconds()}"
-  timer: -> 
-    @__autoresolve = true
+    "#{pad2 d.getHours()}:#{pad2 d.getMinutes()}:#{pad2 d.getSeconds()}"
+  ).autoresolve
+  timer: (-> 
     Date.now()
+  ).autoresolve
   tron:           NI 'ummmmmmmmm'
   troff:          NI 'ummmmmmmmm'
   unlock:         NI 'file'
@@ -247,10 +250,7 @@ NOP = noOp = (arg) -> arg
   base: ->        T('base', arguments)
   using: (template, args) ->
     NI 'fixme'
-  
-  _pad2: (number) ->
-    ("0" + number).slice(-2)
-    
+      
   # unimplemented/needs syntax support
   # DATA needs to execute upon parsing
   # DATE$=v$
