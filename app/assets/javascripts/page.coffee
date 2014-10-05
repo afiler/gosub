@@ -31,16 +31,33 @@ class GosubEnv
     
   window.writeln = (text) ->
     scr.writeln text
+  
+  setSource = (source) ->
+    $('.source').val(source)
+    
+  window.load = (filename) ->
+    if filename.match /^[a-zA-Z]\:/
+      source = localStorage.getItem "file:#{filename}"
+      setSource(source) if source and source.trim() != ""
+    else
+      $.get(filename).then (file) ->
+        setSource file
+  
+  save = (filename, source) ->
+    if filename.match /^[a-zA-Z]\:/
+      localStorage.setItem "file:#{filename}", source
+    else
+      throw "BAD FILENAME"
 
   $ ->
     window.scr = new GsScreen $('.screen-pane')
     scr.cls()
-    $.get('/test.bas').then (file) ->
-      $('.source').val(file)
+    #load '/test.bas'
+    load 'a:/default.bas'
     
-    writeln 'Building parser'
+    writeln 'gosub.io BASIC'
     buildParser().then ->
-      writeln 'Parser built'
+      writeln 'Ok'
     
     $('.screen-pane form').on 'submit', (e) ->
       e.preventDefault()
@@ -51,3 +68,6 @@ class GosubEnv
       scr.write '-> '
       scr.writeln result
       $('.command-line').val('')
+      
+    $('.source').on 'input', ->
+      save 'a:/default.bas', @.value
