@@ -200,7 +200,7 @@ NOP = noOp = (arg) -> arg
   rmdir:          NI 'file'
   rnd: ->         Math.random()
   rset: ->        NI 'syntax'
-  #run: (x) ->    NI 'line numbering' # XXX
+  run:  ((x)->    window.run()).autoresolve # XXX: support running a filename)
   save:           NI 'file', 'bare arguments'
   screen:         NI 'terminal', 'graphics'
   sgn: (x) ->     `x > 0 ? 1 : x < 0 ? -1 : 0`
@@ -233,7 +233,7 @@ NOP = noOp = (arg) -> arg
   troff:          NI 'ummmmmmmmm'
   unlock:         NI 'file'
   usr:            NI 'assembly'
-  val: (x) ->     Number(x)
+  val: (x) ->     Number(x) # XXX: handle "&H" hex values
   varptr:         NI 'file', 'memory'
   varptr$:        NI 'memory'
   view:           NI 'graphics'
@@ -251,6 +251,16 @@ NOP = noOp = (arg) -> arg
   base: ->        T('base', arguments)
   using: (template, args) ->
     NI 'fixme'
+    
+  # Applesoft
+  get:            NI 'keyboard'
+  htab:           NI 'terminal'
+  vtab:           NI 'terminal'
+  gr:             NI 'graphics'
+  plot:           NI 'graphics'
+  hlin:           NI 'graphics'
+  vlin:           NI 'graphics'
+  
       
   # unimplemented/needs syntax support
   # DATA needs to execute upon parsing

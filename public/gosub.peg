@@ -168,6 +168,7 @@ LineTerminatorSequence "end of line"
   / "\r"
   / "\u2028" // line separator
   / "\u2029" // paragraph separator
+  / ":"
 
 Comment "comment"
   = MultiLineComment
@@ -182,7 +183,7 @@ MultiLineCommentNoLineTerminator
 SingleLineComment
   = "'" (!LineTerminator SourceCharacter)*
 
-EOS
+/*EOS
   = __ ":"
   / _ LineTerminatorSequence
   / _ &"end if"
@@ -193,6 +194,6 @@ EOSNoLineTerminator
   / _ LineTerminatorSequence
   / _ &"end if"
   / _ EOF
-
+*/
 EOF
   = !.

@@ -35,8 +35,8 @@ class GosubEnv
     
   window.load = (filename) ->
     if filename.match /^[a-zA-Z]\:/
-      source = localStorage.getItem "file:#{filename}"
-      setSource(source) if source and source.trim() != ""
+      src = localStorage.getItem "file:#{filename}"
+      setSource(src) if src and src.trim() != ""
     else
       $.get(filename).then (file) ->
         setSource file
@@ -50,8 +50,8 @@ class GosubEnv
   $ ->
     window.scr = new GsScreen $('.screen-pane')
     scr.cls()
-    #load '/test.bas'
     load 'a:/default.bas'
+    load '/hello.bas' if source() == ''
     
     writeln 'gosub.io BASIC'
     buildParser().then ->
@@ -59,10 +59,10 @@ class GosubEnv
     
     $('.screen-pane form').on 'submit', (e) ->
       e.preventDefault()
-      source = $('.command-line').val()
+      src = $('.command-line').val()
       scr.write '<- '
-      scr.writeln source
-      result = runSource(source)
+      scr.writeln src
+      result = runSource(src)
       scr.write '-> '
       scr.writeln result
       $('.command-line').val('')
