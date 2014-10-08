@@ -72,7 +72,8 @@ NOP = noOp = (arg) -> arg
   chdir:          NI 'file'
   chr$: (x) ->    String.fromCharCode(x)
   cint: (x) ->    Math.round(x) # FIXME
-  circle:         NI 'graphics'
+  circle: (xy, radius) ->
+    Graphics.circle xy.items[0], xy.items[1], radius
   clear:          NI 'weird BASIC things'
   close:          NI 'file'
   cls: ->         Screen.clear()
