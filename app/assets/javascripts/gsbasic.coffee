@@ -43,7 +43,7 @@ class @GsBasic
     l + r
 
   "-": (l, r) ->
-    return new Tuple('-', l, r) if l.constructor == Tuple
+    return ['-', l, r] if l.constructor == Array
     l - r
 
   "\\": (l, r) ->
@@ -268,10 +268,9 @@ class @GsBasic
   draw:           NI 'graphics'
   
   line: (coords, color, options, style) ->
-    # XXX options
-    throw 'Syntax error?' unless coords.constructor == Tuple and coords.items[0] == '-'
-    from = if coords.items.length > 2 then coords.items[1].items else @_lastPoint
-    @_lastPoint = to = coords.items[2].items # XXX support line -(x, y)
+    throw 'Syntax error?' unless coords.constructor == Array and coords[0] == '-'
+    from = if coords.length > 2 then coords[1] else @_lastPoint
+    @_lastPoint = to = coords[2] # XXX support line -(x, y)
     
     if options == 'B' or options == 'BF'
       Graphics.box from[0], from[1], to[0], to[1], colorMap(color ? @_fgcolor), options == 'BF'

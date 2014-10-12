@@ -20,22 +20,14 @@
 
   return
 
-@Tuple = (@items...) ->
-  @toString = ->
-    "Tuple(" + @items.join(",") + ")"
+class @Block
+  constructor: (@block) ->
 
-  return
-
-@Block = (block) ->
-  self = this
-  @block = block
-  @toString = ->
+  toString: ->
     "Block { " + @block + " }"
 
-  @apply = (that, args) ->
-    window.gosub.call self
-
-  return
+  apply: (that, args) =>
+    window.gosub.call @
 
 class @Span 
   constructor: (@elements) ->

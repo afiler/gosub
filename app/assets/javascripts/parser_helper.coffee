@@ -22,7 +22,4 @@
 @flatten = ->
   [].concat.apply [], arguments
 
-@XTuple = (t) ->
-  new Tuple(t...)
-
-@DEBUG = true
+@DEBUG = false

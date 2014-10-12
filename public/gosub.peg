@@ -60,7 +60,7 @@ Expression
 
 ValueList
   = l:Value _ ',' __ r:ValueList { return flatten(l, r) }
-  / Value
+  / l:Value { return flatten(l) }
 
 Value
   = Additive
@@ -94,7 +94,7 @@ Equality
 
 Primary
   = Integer
-  / '(' valueList:ValueList ')' { return XTuple(flatten(valueList)) }
+  / '(' valueList:ValueList ')' { return flatten(valueList) }
   / "(" value:Value ")" { return value; }
   / String
   / Identifier
