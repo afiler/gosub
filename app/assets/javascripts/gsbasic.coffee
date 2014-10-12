@@ -228,7 +228,7 @@ NOP = noOp = (arg) -> arg
     "#{pad2 d.getHours()}:#{pad2 d.getMinutes()}:#{pad2 d.getSeconds()}"
   ).autoresolve
   timer: (-> 
-    Date.now()
+    Date.now()/1000 #/
   ).autoresolve
   tron:           NI 'ummmmmmmmm'
   troff:          NI 'ummmmmmmmm'
