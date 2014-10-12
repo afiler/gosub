@@ -1,13 +1,12 @@
 class Graphics
   constructor: (@canvas) ->
-    @context = @canvas.getContext '2d'
 
   circle: (x, y, radius, color) ->
     context = @canvas.getContext '2d'
     context.beginPath()
     context.arc x, y, radius, 0, 2 * Math.PI, false
     context.lineWidth = 1
-    context.strokeStyle = 'green'
+    context.strokeStyle = color
     context.stroke()
     
   line: (fromX, fromY, toX, toY, color, lineStyle) ->
@@ -26,6 +25,12 @@ class Graphics
     context.strokeStyle = color
     context.fillRect fromX, fromY, width, height if fill
     context.strokeRect fromX, fromY, width, height
+    context.stroke()
+    
+  point: (x, y, color) ->
+    context = @canvas.getContext '2d'
+    context.fillStyle = color
+    context.fillRect x, y, 1, 1
     context.stroke()
 
 $ ->

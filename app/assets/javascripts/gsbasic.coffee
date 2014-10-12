@@ -187,7 +187,6 @@ class @GsBasic
   pen:            NI 'hardware'
   play:           NI 'audio'
   poke:           NI 'memory'
-  pset:           @preset
   randomize:      NI 'prng'
   read: ->        
     error 0, 'Out of data' if @_DATA_IDX >= @_DATA.length # XXX: needs errno
@@ -284,7 +283,12 @@ class @GsBasic
   pmap:           NI 'graphics'
   point:          NI 'graphics'
   pos:            NI 'terminal'
-  preset:         NI 'graphics'
+  
+  preset: (coords, color) ->
+    Graphics.point coords.items[0], coords.items[1], colorMap(color ? @_fgcolor)
+  
+  pset:           -> @preset(arguments...)
+  
   view:           NI 'graphics'
   window:         NI 'graphics'
   
