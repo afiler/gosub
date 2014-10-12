@@ -20,9 +20,9 @@
 
   return
 
-@Tuple = (@items) ->
+@Tuple = (@items...) ->
   @toString = ->
-    "Tuple(" + items.join(",") + ")"
+    "Tuple(" + @items.join(",") + ")"
 
   return
 
@@ -49,9 +49,13 @@ class @Span
 
     val
 
-class @Symbol
-  constructor: (val) ->
-    @val = val.join ''
-  
+class Symbol extends String
+  constructor: (@_value) ->
   toString: ->
-    "##{@val}"
+    "##{@_value}"
+
+symbols = {}  
+@Symbol = (str) ->
+  unless symbols[str]
+    symbols[str] = new Symbol(str)
+  symbols[str]

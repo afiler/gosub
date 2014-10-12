@@ -1,16 +1,33 @@
 notImplemented = (features...) -> throw new Error("Not implemented, needs #{feature.join(',')} support")
 NI = (features...) -> -> notImplemented(features...)
 NOP = noOp = (arg) -> arg
-`Object.defineProperty(Function.prototype, 'autoresolve', { get: function() { this.__autoresolve = true; return this } })`
+Object.defineProperty Function::, 'autoresolve',
+  get: ->
+    @__autoresolve = true
+    this
 
-@gsbasic = ->
-  _DATA = []
-  _DATA_IDX = 0
-  _ENVIRON = {}
-  _ERRNO = null
+class @GsBasic
+  constructor: ->
+    @_DATA = []
+    @_DATA_IDX = 0
+    @_ENVIRON = {}
+    @_ERRNO = null
+    @_fgcolor = 7
+    @_bgcolor = 1
+    @_lastPoint = [160, 120] # XXX
   
   pad2 = (number) ->
     ("0" + number).slice(-2)
+    
+  colorMap = (colorId) ->
+    return undefined if colorId == undefined
+    
+    digit = if 8 & colorId then 'F' else '8'
+    r = 4 & colorId && digit
+    g = 2 & colorId && digit
+    b = 1 & colorId && digit
+    g = '4' if colorId == 6 # brown/orange
+    "##{r}#{g}#{b}"
   
   if: (a, b, c) ->
     debug "if(%s,%s,%s)", a, b, c
@@ -26,6 +43,7 @@ NOP = noOp = (arg) -> arg
     l + r
 
   "-": (l, r) ->
+    return new Tuple('-', l, r) if l.constructor == Tuple
     l - r
 
   "\\": (l, r) ->
@@ -72,12 +90,9 @@ NOP = noOp = (arg) -> arg
   chdir:          NI 'file'
   chr$: (x) ->    String.fromCharCode(x)
   cint: (x) ->    Math.round(x) # FIXME
-  circle: (xy, radius) ->
-    Graphics.circle xy.items[0], xy.items[1], radius
   clear:          NI 'weird BASIC things'
   close:          NI 'file'
   cls: ->         Screen.clear()
-  color:          NI 'terminal'
   com:            NI 'serial'
   common:         NI 'weird BASIC things'
   cont:           NI 'break'
@@ -87,7 +102,7 @@ NOP = noOp = (arg) -> arg
   cvi:            NI 'serialization'
   cvs:            NI 'serialization'
   cvd:            NI 'serialization'
-  data: (x...) -> _DATA.push x...
+  data: (x...) -> @_DATA.push x...
   date$: (->
     now = new Date()
     "#{pad2 now.getMonth()}-#{pad2 now.getDate()}-#{now.getFullYear()}"
@@ -98,20 +113,19 @@ NOP = noOp = (arg) -> arg
   defstr:         NOP
   delete:         NI 'line numbering'
   dim:            NOP # FIXME?
-  draw:           NI 'graphics'
   edit:           NI 'line numbering'
   end:            NI 'weird BASIC things'
   environ: (str) ->
     [k, v] = String(str).split('-')
-    _ENVIRON[k] = v
-  environ$: (k) -> _ENVIRON[k]
+    @_ENVIRON[k] = v
+  environ$: (k) -> @_ENVIRON[k]
   eof:            NI 'file'
   erase:          NOP
   erdev:          NI 'file', 'error'
   err:            NI 'error', 'paren-less resolution'
   erl:            NI 'error', 'line numbering', 'paren-less resolution'
   error: (errno, msg) ->
-    _ERRNO = errno
+    @_ERRNO = errno
     throw msg
   exp: (x) ->     Math.exp(x)
   exterr:         NI 'DOS'
@@ -121,7 +135,6 @@ NOP = noOp = (arg) -> arg
   for: (id, start, stop, step, forExpr) ->
     NI 'WIP'
   fre:            524288 # XXX?
-  get:            NI 'file', 'graphics'
   gosub:          NI 'line numbering'
   goto:           NI 'line numbering'
   hex$: (x) ->    Number(x).toString(16)
@@ -144,7 +157,6 @@ NOP = noOp = (arg) -> arg
   left: (x$, n) ->
     String(x$).substr(0, n)
   len: (x$) ->    String(x$).length
-  line:           NI 'graphics'
   list:           NI 'terminal', 'line numbering'
   llist:          NI 'terminal', 'line numbering', 'printer'
   load:           NI 'file'
@@ -171,29 +183,21 @@ NOP = noOp = (arg) -> arg
   option: (base) ->
     NI 'fixme'
   out:            NI 'hardware'
-  paint:          NI 'graphics'
-  palette:        NI 'graphics'
-  pcopy:          NI 'terminal', 'graphics'
   peek:           NI 'memory'
   pen:            NI 'hardware'
   play:           NI 'audio'
-  pmap:           NI 'graphics'
-  point:          NI 'graphics'
   poke:           NI 'memory'
-  pos:            NI 'terminal'
-  preset:         NI 'graphics'
   pset:           @preset
-  put:            NI 'file', 'graphics'
   randomize:      NI 'prng'
   read: ->        
-    error 0, 'Out of data' if _DATA_IDX >= _DATA.length # XXX: needs errno
-    _DATA[_DATA_IDX++]
+    error 0, 'Out of data' if @_DATA_IDX >= @_DATA.length # XXX: needs errno
+    @_DATA[@_DATA_IDX++]
   rem: ->
   renum:          NI 'line numbers'
   reset:          NI 'file'
   restore: (line) ->
     return NI 'line numbers' if line
-    _DATA_IDX = 0
+    @_DATA_IDX = 0
   resume:         NI 'error', 'line numbering'
   return:         NI 'ummmmmmmmm', 'line numbering'
   right$: (x$, n) ->
@@ -203,7 +207,6 @@ NOP = noOp = (arg) -> arg
   rset: ->        NI 'syntax'
   run:  ((x)->    window.run()).autoresolve # XXX: support running a filename)
   save:           NI 'file', 'bare arguments'
-  screen:         NI 'terminal', 'graphics'
   sgn: (x) ->     `x > 0 ? 1 : x < 0 ? -1 : 0`
   shell:          NI 'os'
   sin: (x) ->     Math.sin(x)
@@ -237,13 +240,11 @@ NOP = noOp = (arg) -> arg
   val: (x) ->     Number(x) # XXX: handle "&H" hex values
   varptr:         NI 'file', 'memory'
   varptr$:        NI 'memory'
-  view:           NI 'graphics'
   wait:           NI 'hardware'
   while: (cond, whileExpr) ->
     while(cond.resolve())
       whileExpr.resolve()
   width:          NI 'terminal'
-  window:         NI 'graphics'
   write: (args...) ->
     String(args...) # XXX: needs spaces between arguments?
   'write#':       NI 'file'
@@ -252,17 +253,57 @@ NOP = noOp = (arg) -> arg
   base: ->        T('base', arguments)
   using: (template, args) ->
     NI 'fixme'
+  B: 'B'
+  BF: 'BF'
     
   # Applesoft
   get:            NI 'keyboard'
   htab:           NI 'terminal'
   vtab:           NI 'terminal'
+  
+  
+  # GRAPHICS
+  circle: (xy, radius, color, start, end, aspect) ->
+    Graphics.circle xy.items[0], xy.items[1], radius, colorMap(color ? @_color)
+    
+  draw:           NI 'graphics'
+  
+  line: (coords, color, options, style) ->
+    # XXX options
+    throw 'Syntax error?' unless coords.constructor == Tuple and coords.items[0] == '-'
+    from = if coords.items.length > 2 then coords.items[1].items else @_lastPoint
+    @_lastPoint = to = coords.items[2].items # XXX support line -(x, y)
+    
+    if options == 'B' or options == 'BF'
+      Graphics.box from[0], from[1], to[0], to[1], colorMap(color ? @_fgcolor), options == 'BF'
+    else
+      Graphics.line from[0], from[1], to[0], to[1], colorMap(color ? @_fgcolor)
+    
+  paint:          NI 'graphics'
+  palette:        NI 'graphics'
+  pmap:           NI 'graphics'
+  point:          NI 'graphics'
+  pos:            NI 'terminal'
+  preset:         NI 'graphics'
+  view:           NI 'graphics'
+  window:         NI 'graphics'
+  
+  # Applesoft
   gr:             NI 'graphics'
   plot:           NI 'graphics'
   hlin:           NI 'graphics'
   vlin:           NI 'graphics'
   
-      
+  # GRAPHICS/TERM
+  color: (@_fgcolor, @_bgcolor) ->
+    
+  screen:         NI 'terminal', 'graphics'
+  
+  # GRAPHICS/FILE
+  get:            NI 'file', 'graphics'
+  put:            NI 'file', 'graphics'
+  pcopy:          NI 'terminal', 'graphics'
+  
   # unimplemented/needs syntax support
   # DATA needs to execute upon parsing
   # DATE$=v$
@@ -275,4 +316,3 @@ NOP = noOp = (arg) -> arg
   # MID$(A$, 14)="KS"
   # READ A(I)
   # RSET X$=Y$
-  

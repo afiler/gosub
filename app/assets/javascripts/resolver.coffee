@@ -5,7 +5,7 @@
 window.gosub =
   scope: {}
   resetScope: ->
-    window.gosub.scope = gsbasic()
+    window.gosub.scope = new GsBasic()
       
     window.gosub.scope._get = (k) ->
         v = window.gosub.scope[k]
@@ -46,8 +46,8 @@ window.gosub =
       resolved_fn = @resolve(el.ident)
       debug "resolved_fn %s", resolved_fn
       resolved_args = @resolve(el.args)
-      debug "preresolved_args %s length %d", jsDump.parse(resolved_args), resolved_args.length
-      debug "preresolved_args (%o)", resolved_args
+      #debug "preresolved_args %s length %d", jsDump.parse(resolved_args), resolved_args.length
+      #debug "preresolved_args (%o)", resolved_args
       resolved_args = [resolved_args]  unless resolved_args.constructor is Array
       debug "resolved_args %s length %d", jsDump.parse(resolved_args), resolved_args.length
       debug "resolved_args (%o)", resolved_args
@@ -56,7 +56,8 @@ window.gosub =
       # if (resolved_fn.constructor == Block) {
       #   result = window.gosub.call(resolved_fn)
       # } else {
-      console.log resolved_fn
+      #console.log resolved_fn
+      resolved_args = resolved_args.items if resolved_args.items
       result = resolved_fn.apply(window.gosub.scope, resolved_args)
       
       #}
