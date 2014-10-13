@@ -15,18 +15,24 @@ class @GsBasic
     @_fgcolor = 7
     @_bgcolor = 1
     @_lastPoint = [160, 120] # XXX
+    
+    setTimeout =>
+      @_screen = new GsScreen $('.screen-pane')
+      window.scr = @_screen
+    , 500
   
   pad2 = (number) ->
     ("0" + number).slice(-2)
     
   colorMap = (colorId) ->
     return undefined if colorId == undefined
+    return '#840' if colorId == 6
+    return '#444' if colorId == 8
     
     digit = if 8 & colorId then 'F' else '8'
     r = 4 & colorId && digit
     g = 2 & colorId && digit
     b = 1 & colorId && digit
-    g = '4' if colorId == 6 # brown/orange
     "##{r}#{g}#{b}"
   
   if: (a, b, c) ->
@@ -60,15 +66,6 @@ class @GsBasic
 
   "==": (l, r) ->
     l is r
-
-  print: (args...) ->
-    for arg in args
-      if arg.constructor == Symbol
-        color = arg.val
-      else
-        window.scr.write arg, color
-    window.scr.writeln()
-    return
 
   def: (k, v) ->
     window.gosub.scope[k] = v
@@ -263,7 +260,9 @@ class @GsBasic
   
   # GRAPHICS
   circle: (xy, radius, color, start, end, aspect) ->
-    Graphics.circle xy.items[0], xy.items[1], radius, colorMap(color ? @_color)
+    console.log 'circle', arguments
+    console.log "Graphics.circle #{xy[0]}, #{xy[1]}, #{radius}, #{colorMap(color ? @_color)}"
+    Graphics.circle xy[0], xy[1], radius, colorMap(color)
     
   draw:           NI 'graphics'
   
@@ -273,9 +272,9 @@ class @GsBasic
     @_lastPoint = to = coords[2] # XXX support line -(x, y)
     
     if options == 'B' or options == 'BF'
-      Graphics.box from[0], from[1], to[0], to[1], colorMap(color ? @_fgcolor), options == 'BF'
+      Graphics.box from[0], from[1], to[0], to[1], colorMap(color), options == 'BF'
     else
-      Graphics.line from[0], from[1], to[0], to[1], colorMap(color ? @_fgcolor)
+      Graphics.line from[0], from[1], to[0], to[1], colorMap(color)
     
   paint:          NI 'graphics'
   palette:        NI 'graphics'
@@ -284,7 +283,7 @@ class @GsBasic
   pos:            NI 'terminal'
   
   preset: (coords, color) ->
-    Graphics.point coords.items[0], coords.items[1], colorMap(color ? @_fgcolor)
+    Graphics.point coords.items[0], coords.items[1], colorMap(color)
   
   pset:           -> @preset(arguments...)
   
@@ -298,7 +297,9 @@ class @GsBasic
   vlin:           NI 'graphics'
   
   # GRAPHICS/TERM
-  color: (@_fgcolor, @_bgcolor) ->
+  color: (fgcolor, bgcolor) ->
+    @_screen.fgcolor = colorMap(fgcolor) if fgcolor
+    @_screen.bgcolor = colorMap(bgcolor) if bgcolor
     
   screen:         NI 'terminal', 'graphics'
   
@@ -306,6 +307,17 @@ class @GsBasic
   get:            NI 'file', 'graphics'
   put:            NI 'file', 'graphics'
   pcopy:          NI 'terminal', 'graphics'
+  
+  # TERMINAL
+  print: (args...) ->
+    for arg in args
+      if arg.constructor == Symbol
+        color = arg.val
+      else
+        @_screen.write arg, color
+    @_screen.writeln()
+    return
+  
   
   # unimplemented/needs syntax support
   # DATA needs to execute upon parsing

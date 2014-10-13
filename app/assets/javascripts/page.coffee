@@ -22,7 +22,10 @@ class GosubEnv
   runSource = (source, debug=false) ->
     output = @parser.parse source
     window.writeln output if debug
-    window.gosub.run @parser.parse(source)
+    parsedSource = @parser.parse(source)
+    console.log 'AST', parsedSource.toString()
+    window.parsedSource = parsedSource
+    window.gosub.run parsedSource
 
   window.write = (text) ->
     scr.write text
@@ -48,23 +51,24 @@ class GosubEnv
       throw "BAD FILENAME"
 
   $ ->
-    window.scr = new GsScreen $('.screen-pane')
-    scr.cls()
     load 'a:/default.bas'
     load '/hello.bas' if source() == ''
     
-    writeln 'gosub.io BASIC'
-    buildParser().then ->
-      writeln 'Ok'
+    # XXX
+    setTimeout ->
+      writeln 'gosub.io BASIC'
+      buildParser().then ->
+        writeln 'Ok'
+    , 1000
     
     $('.screen-pane form').on 'submit', (e) ->
       e.preventDefault()
       src = $('.command-line').val()
-      scr.write '<- '
-      scr.writeln src
+      write '<- '
+      writeln src
       result = runSource(src)
-      scr.write '-> '
-      scr.writeln result
+      write '-> '
+      writeln result
       $('.command-line').val('')
       
     $('.source').on 'input', ->

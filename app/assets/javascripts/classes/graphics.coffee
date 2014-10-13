@@ -1,6 +1,5 @@
-class Graphics
+class @Graphics
   constructor: (@canvas) ->
-    @font = new Font('/fonts/cga_8x8.png', 8, 8)
 
   context: (f) ->
     context = @canvas.getContext '2d'
@@ -46,45 +45,28 @@ class Graphics
       imageData = c.getImageData 0, y, c.canvas.width, c.canvas.height-y
       c.putImageData imageData, 0, 0
       c.clearRect 0, c.canvas.height-y, c.canvas.width, y
-    
-  writeString: (string, row, col, fgcolor, bgcolor, font) ->
-    font ||= @font
-    cw = font.charWidth
-    ch = font.charHeight
-    
-    x = col * cw
-    y = row * ch
-    
-    for c, i in string
-      @writeChar c, x, y, fgcolor, bgcolor, font
-      x = x + cw
-      if x > @canvas.width
-        x = 0
-        y = y + ch
-      if y > @canvas.height
-        @scroll ch
-        y = y - ch
 
-    return
-
-  writeChar: (char, x, y, fgcolor, bgcolor, font) ->
-    font ||= @font
+  writeChar: (char, x, y, fgcolor, bgcolor, font, destCharWidth, destCharHeight) ->
     [fontX, fontY] = font.charPos char
-    cw = font.charWidth
+    cw = font.hwCharWidth #font.charWidth
     ch = font.charHeight
+    destCharWidth ||= cw
+    destCharHeight ||= ch
     
     @context (c) ->
-      c.clearRect x, y, cw, ch
-      c.drawImage font.img, fontX, fontY, cw, ch, x, y, cw, ch
+      c.clearRect x, y, destCharWidth, destCharHeight
+      c.drawImage font.img, fontX, fontY, cw, ch, x, y, destCharWidth, destCharHeight
       c.fillStyle = fgcolor
       c.globalCompositeOperation = 'source-atop'
-      c.fillRect x, y, cw, ch
+      c.fillRect x, y, destCharWidth, destCharHeight
       c.fillStyle = bgcolor
       c.globalCompositeOperation = 'destination-over'
-      c.fillRect x, y, cw, ch
+      c.fillRect x, y, destCharWidth, destCharHeight
     
 class @Font
-  constructor: (path, @charWidth, @charHeight) ->
+  constructor: (path, @charWidth, @charHeight, fullwidth=false) ->
+    @hwCharWidth = if fullwidth then @charWidth / 2 else @charWidth
+
     @img = new Image()
     @img.onload = =>
       @loaded = true
@@ -96,6 +78,3 @@ class @Font
     row = ~~(charCode / @cellsPerRow) # integer divide
     col = charCode % @cellsPerRow
     [col * @charWidth, row * @charHeight]
-
-$ ->
-  window.Graphics = new Graphics $('canvas')[0]
