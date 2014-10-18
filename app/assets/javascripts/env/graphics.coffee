@@ -1,19 +1,24 @@
 class @Graphics
   constructor: (@canvas) ->
+    @context (c) ->
+      #c.translate 0.5, 0.5
 
   context: (f) ->
     context = @canvas.getContext '2d'
+    context.imageSmoothingEnabled = false
     context.save()
     f(context)
     context.restore()
     
   circle: (x, y, radius, color) ->
+    console.log 'circle', arguments
     @context (c) ->
       c.beginPath()
       c.arc x, y, radius, 0, 2 * Math.PI, false
       c.lineWidth = 1
       c.strokeStyle = color
       c.stroke()
+      
     
   line: (fromX, fromY, toX, toY, color, lineStyle) ->
     @context (c) ->
@@ -68,11 +73,12 @@ class @Font
     @hwCharWidth = if fullwidth then @charWidth / 2 else @charWidth
 
     @img = new Image()
-    @img.onload = =>
-      @loaded = true
-      @cellsPerRow = @img.width / @charWidth
-    @img.src = path
-    
+    @getReady = new Promise (resolve, reject) =>
+      @img.onload = =>
+        @cellsPerRow = @img.width / @charWidth
+        resolve()
+      @img.src = path
+
   charPos: (char) ->
     charCode = char.charCodeAt(0)
     row = ~~(charCode / @cellsPerRow) # integer divide

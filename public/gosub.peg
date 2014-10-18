@@ -1,9 +1,9 @@
 {
-  function F(name, args) {
-    var args = [].slice.call(arguments)
-    var name = args.shift()
-    return new Fn(new Id(name), args)
-  }
+  var jsStr = GsBasic.ParserHelper.jsStr;
+  var jsInt = GsBasic.ParserHelper.jsInt;
+  var rollup = GsBasic.ParserHelper.rollup;
+  var flatten = GsBasic.ParserHelper.flatten;
+  var F = GsBasic.ParserHelper.call;
 }
 
 start
@@ -55,12 +55,12 @@ Assignment
   = l:Identifier _ '=' __ r:Expression { return F('def', l.name, r) }
   
 Expression
-  = l:Identifier _ r:Expression { return new Fn(l, r) }
+  = l:Identifier _ r:Expression { return new Call(l, r) }
   / ValueList
+  / l:Value { return flatten(l) }
 
 ValueList
-  = l:Value _ ',' __ r:ValueList { return flatten(l, r) }
-  / l:Value { return flatten(l) }
+  = l:Value _ ',' __ r:Expression { return flatten(l, r) }
 
 Value
   = Additive

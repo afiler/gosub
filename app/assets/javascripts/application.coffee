@@ -1,7 +1,9 @@
-#= require 'peg-0.8.0'
-#= require 'jquery/dist/jquery'
+#= require 'gosub'
 
-#= require_tree './classes'
-#= require 'parser_helper'
-#= require 'resolver'
-#= require 'page'
+@DEBUG = false
+
+@debug = ->
+  window.lastlog = arguments
+  console.log.apply console, arguments  if DEBUG
+  return
+

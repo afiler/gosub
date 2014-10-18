@@ -1,21 +1,18 @@
 #= require jsDump
-#= require gsbasic
 
-# ##################### 
-window.gosub =
-  scope: {}
-  resetScope: ->
-    window.gosub.scope = new GsBasic()
-      
-    window.gosub.scope._get = (k) ->
-        v = window.gosub.scope[k]
-        debug "GET %s => %s", k, v
-        if v
-          window.gosub.scope[k]
-        else
-          debug "UNDEFINED: %s", k
-
-    return
+class @GsBasic
+  constructor: (env) ->
+    console.log 'Constructing a GsBasic'
+    @scope = new @Main(env)
+    
+  _get: (k) ->
+    console.log '_get', @
+    v = @scope[k]
+    debug "GET %s => %s", k, v
+    if v
+      @scope[k]
+    else
+      throw "UNDEFINED: #{k}"
 
   run: (block) ->
     @call block
@@ -42,8 +39,8 @@ window.gosub =
     debug "resolve(%o)", el
     return unless el?
 
-    if el.constructor is Fn
-      debug "Resolving Fn %s", el.ident
+    if el instanceof Call
+      debug "Resolving call to %s", el.ident
       resolved_fn = @resolve(el.ident)
       debug "resolved_fn %s", resolved_fn
       resolved_args = @resolve(el.args)
@@ -56,16 +53,16 @@ window.gosub =
       # } else {
 
       debug "Invoking #{el.ident} with args (#{resolved_args})"
-      result = resolved_fn.apply(window.gosub.scope, resolved_args)
+      result = resolved_fn.apply(@scope, resolved_args)
       
       debug "applied result %s", result
       result
-    else if el.constructor is Id
-      val = window.gosub.scope._get(el.name)
+    else if el instanceof Id
+      val = @_get(el.name)
       debug "Resolving Id %s => %s", el, val
       val = val.apply() if val and val.__autoresolve
       val
-    else if el.constructor is Array
+    else if el instanceof Array
       el.map (x) =>
         @resolve x
     
@@ -75,5 +72,3 @@ window.gosub =
     else
       debug "Value? %o", el
       el
-      
-window.gosub.resetScope()

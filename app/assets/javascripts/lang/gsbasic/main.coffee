@@ -1,13 +1,18 @@
 notImplemented = (features...) -> throw new Error("Not implemented, needs #{feature.join(',')} support")
 NI = (features...) -> -> notImplemented(features...)
 NOP = noOp = (arg) -> arg
+
+
+
 Object.defineProperty Function::, 'autoresolve',
   get: ->
     @__autoresolve = true
     this
+Function::__resolve = ->
+  
 
-class @GsBasic
-  constructor: ->
+class @GsBasic::Main
+  constructor: (env) ->
     @_DATA = []
     @_DATA_IDX = 0
     @_ENVIRON = {}
@@ -16,15 +21,15 @@ class @GsBasic
     @_bgcolor = 1
     @_lastPoint = [160, 120] # XXX
     
-    setTimeout =>
-      @_screen = new GsScreen $('.screen-pane')
-      window.scr = @_screen
-    , 500
+    @_screen = env.screen
+    
+    @scope = => @ # XXX
   
   pad2 = (number) ->
     ("0" + number).slice(-2)
     
   colorMap = (colorId) ->
+    return colorId if colorId instanceof String
     return undefined if colorId == undefined
     return '#840' if colorId == 6
     return '#444' if colorId == 8
@@ -68,11 +73,17 @@ class @GsBasic
     l is r
 
   def: (k, v) ->
-    window.gosub.scope[k] = v
+    #@scope()[k] = v
+    @[k] = v
 
   let: (args) ->
     args
-
+    
+  for: (id, start, stop, step, forExpr) ->
+    NI 'WIP'
+  
+  run:  ((x)->    window.run()).autoresolve # XXX: support running a filename
+  
   
   abs: (x) ->     Math.abs(x)
   asc: (x) ->     String(x).charCodeAt(0)
@@ -129,8 +140,6 @@ class @GsBasic
   field:          NI 'file'
   files:          NI 'file'
   fix: (x) ->     sgn(x)*int(abs(x))
-  for: (id, start, stop, step, forExpr) ->
-    NI 'WIP'
   fre:            524288 # XXX?
   gosub:          NI 'line numbering'
   goto:           NI 'line numbering'
@@ -201,7 +210,6 @@ class @GsBasic
   rmdir:          NI 'file'
   rnd: ->         Math.random()
   rset: ->        NI 'syntax'
-  run:  ((x)->    window.run()).autoresolve # XXX: support running a filename)
   save:           NI 'file', 'bare arguments'
   sgn: (x) ->     `x > 0 ? 1 : x < 0 ? -1 : 0`
   shell:          NI 'os'
@@ -259,10 +267,14 @@ class @GsBasic
   
   
   # GRAPHICS
-  circle: (xy, radius, color, start, end, aspect) ->
-    console.log 'circle', arguments
-    console.log "Graphics.circle #{xy[0]}, #{xy[1]}, #{radius}, #{colorMap(color ? @_color)}"
-    Graphics.circle xy[0], xy[1], radius, colorMap(color)
+  # temp parser bug kludgearound
+  #circle: (xy, radius, color, start, end, aspect) ->
+  circle: (x, y, radius, color, start, end, aspect) ->
+    #console.log 'circle', arguments
+    #console.log "Graphics.circle #{xy[0]}, #{xy[1]}, #{radius}, #{colorMap(color ? @_color)}"
+    # temp parser bug kludgearound
+    #@_screen.graphics.circle xy[0], xy[1], radius, colorMap(color)
+    @_screen.graphics.circle x, y, radius, colorMap(color)
     
   draw:           NI 'graphics'
   
@@ -272,9 +284,9 @@ class @GsBasic
     @_lastPoint = to = coords[2] # XXX support line -(x, y)
     
     if options == 'B' or options == 'BF'
-      Graphics.box from[0], from[1], to[0], to[1], colorMap(color), options == 'BF'
+      @_screen.graphics.box from[0], from[1], to[0], to[1], colorMap(color), options == 'BF'
     else
-      Graphics.line from[0], from[1], to[0], to[1], colorMap(color)
+      @_screen.graphics.line from[0], from[1], to[0], to[1], colorMap(color)
     
   paint:          NI 'graphics'
   palette:        NI 'graphics'
@@ -283,7 +295,7 @@ class @GsBasic
   pos:            NI 'terminal'
   
   preset: (coords, color) ->
-    Graphics.point coords.items[0], coords.items[1], colorMap(color)
+    @_screen.graphics.point coords.items[0], coords.items[1], colorMap(color)
   
   pset:           -> @preset(arguments...)
   

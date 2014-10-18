@@ -9,7 +9,7 @@
 
   return
 
-@Fn = (ident, args) ->
+@Call = (ident, args) ->
   @ident = ident
   @args = args
   @toString = ->
@@ -44,7 +44,7 @@ class @Span
 class Symbol extends String
   constructor: (@_value) ->
   toString: ->
-    "##{@_value}"
+    "#{@_value}"
 
 symbols = {}  
 @Symbol = (str) ->
