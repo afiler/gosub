@@ -20,8 +20,9 @@ class GosubEnv
     runSource source(), true
   
   runSource = (source, debug=false) ->
+    return if source.trim() == ""
     output = @parser.parse source
-    window.writeln output if debug
+    window.writeln output if DEBUG
     parsedSource = @parser.parse(source)
     console.log 'AST', parsedSource.toString()
     window.parsedSource = parsedSource
@@ -51,25 +52,28 @@ class GosubEnv
       throw "BAD FILENAME"
 
   $ ->
+    $('.keygrabber').focus()
+    
     load 'a:/default.bas'
     load '/hello.bas' if source() == ''
+    
+    lineHandler = (line) ->
+      writeln ""
+      #return window.run() if line.toLowerCase() == 'run' # XXX
+      result = runSource(line)
+      write '-> '
+      writeln result
+      $('.command-line').val('')
     
     # XXX
     setTimeout ->
       writeln 'gosub.io BASIC'
+      scr.lineHandler = lineHandler
       buildParser().then ->
         writeln 'Ok'
+      
     , 1000
     
-    $('.screen-pane form').on 'submit', (e) ->
-      e.preventDefault()
-      src = $('.command-line').val()
-      write '<- '
-      writeln src
-      result = runSource(src)
-      write '-> '
-      writeln result
-      $('.command-line').val('')
       
     $('.source').on 'input', ->
       save 'a:/default.bas', @.value
