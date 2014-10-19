@@ -5,9 +5,14 @@ class @Id
 
   toString: ->
     "«" + @name + "»"
-
-  resolve: (scope) ->
-    scope[ident]
+    
+  resolve: (resolver, scope) ->
+    val = scope[@name]
+    debug "Resolving Id %s => %s", @name, val
+    throw "UNDEFINED: #{@name}" unless val?
+    
+    val = val.apply() if val and val.__autoresolve
+    val
 
 class @Call 
   constructor: (@ident, @args) ->
@@ -17,7 +22,7 @@ class @Call
 
   resolve: (resolver, scope) ->
     debug "Resolving call to %s", @ident
-    resolved_fn = resolver(@ident)
+    resolved_fn = @ident.resolve(resolver, scope)#resolver(@ident)
     debug "resolved_fn %s", resolved_fn
     resolved_args = resolver(@args)
     debug "resolved_args %s length %d", jsDump.parse(resolved_args), resolved_args.length
@@ -40,16 +45,19 @@ class @Block
   toString: ->
     "Block { " + @block + " }"
 
-  apply: (that, args) =>
-    window.gosub.call @
+  resolve: (resolver, scope) =>
+    val = undefined
+    @block.forEach (el) =>
+      val = resolver(el)
+    val
 
 class @Span 
   constructor: (@elements) ->
     
-  resolve: (scope) ->
+  resolve: (resolver, scope) ->
     val = undefined
     elements.forEach (el) ->
-      val = window.gosub.resolve(el)
+      val = resolver(el)
       window.write el + "\n -> " + self.inspect(val)
       return
 
