@@ -23,14 +23,14 @@ class @Gosub
     @load '/hello.bas' if @source.val() == ''
 
     writeln 'gosub.io BASIC'
-    @buildParser().then ->
+    @buildParser().then =>
       writeln 'Ok'
+      @takeInput()
 
   initPage: ->
     @source.on 'input', =>
       @save @defaultFilename, @source[0].value
-    @screen.lineHandler = (line) => @lineHandler(line)
-    
+        
     window.write = (text) =>
       @screen.write text
     
@@ -39,6 +39,7 @@ class @Gosub
     
     window.run = =>
       @runSource @source.val(), true
+    
 
   
   buildParser: ->
@@ -67,7 +68,7 @@ class @Gosub
       src = localStorage.getItem "file:#{filename}"
       @setSource(src) if src and src.trim() != ""
     else
-      $.get(filename).then (file) ->
+      $.get(filename).then (file) =>
         @setSource file
   
   save: (filename, source) ->
@@ -76,13 +77,18 @@ class @Gosub
     else
       throw "BAD FILENAME"
 
+  takeInput: ->
+    @screen.lineHandler = (line) =>
+      @lineHandler(line)
+      write ']'
+    write ']'
+
   lineHandler: (line) ->
     writeln ""
     result = @runSource(line)
     if result?
       write '-> '
       writeln result
-    write '] '
 
 $ ->
   screenEl = $('.screen')[0]

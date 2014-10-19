@@ -3,7 +3,7 @@
   var jsInt = GsBasic.ParserHelper.jsInt;
   var rollup = GsBasic.ParserHelper.rollup;
   var flatten = GsBasic.ParserHelper.flatten;
-  var F = GsBasic.ParserHelper.call;
+  var F = GsBasic.ParserHelper.callFn;
 }
 
 start

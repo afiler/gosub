@@ -1,24 +1,38 @@
-@Id = (name, sigil) ->
-  @name = name + ((if sigil then sigil else ""))
-  @sigil = sigil
-  @toString = ->
+class @Id 
+  constructor: (name, sigil=undefined) ->
+    @name = name + (sigil || '')
+    @sigil = sigil
+
+  toString: ->
     "«" + @name + "»"
 
-  @resolve = (scope) ->
+  resolve: (scope) ->
     scope[ident]
 
-  return
+class @Call 
+  constructor: (@ident, @args) ->
 
-@Call = (ident, args) ->
-  @ident = ident
-  @args = args
-  @toString = ->
-    @ident.name + "(" + args + ")"
+  toString: ->
+    @ident.name + "(" + @args + ")"
 
-  @resolve = (scope) ->
-    scope[ident].call `undefined`, args
+  resolve: (resolver, scope) ->
+    debug "Resolving call to %s", @ident
+    resolved_fn = resolver(@ident)
+    debug "resolved_fn %s", resolved_fn
+    resolved_args = resolver(@args)
+    debug "resolved_args %s length %d", jsDump.parse(resolved_args), resolved_args.length
+    debug "resolved_args (%o)", resolved_args
+    result = undefined
+    
+    # if (resolved_fn.constructor == Block) {
+    #   result = window.gosub.call(resolved_fn)
+    # } else {
 
-  return
+    debug "Invoking #{@ident} with args (#{resolved_args})"
+    result = resolved_fn.apply(scope, resolved_args)
+    
+    debug "applied result %s", result
+    result
 
 class @Block
   constructor: (@block) ->

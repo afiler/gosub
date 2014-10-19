@@ -1,5 +1,5 @@
 GsBasic.ParserHelper =
-  call: ->
+  callFn: ->
     args = [].slice.call(arguments)
     name = args.shift()
     new Call(new Id(name), args)
