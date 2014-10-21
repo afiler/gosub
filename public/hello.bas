@@ -1,3 +1,9 @@
-print #blue, "gosub.io"
-print #red, "𝑔𝑜𝑠𝑢𝑏.𝑖𝑜"
-print #yellow, "𝔤𝔬𝔰𝔲𝔟.𝔦𝔬"
+color 1
+print
+print "Text colors!"
+color 2
+print "And circles!"
+circle (100, 100), 25, 2
+circle (100, 150), 25, 2
+circle (150, 100), 25, 2
+circle (150, 150), 25, 2
